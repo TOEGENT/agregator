@@ -1,0 +1,46 @@
+источники информации:
+
+- https://zavkrov.ru/magazin/metallocherepica
+- https://zavkrov.ru/magazin/profnastil
+- https://zavkrov.ru/magazin/folder/pylesosy
+- https://zavkrov.ru/magazin/folder/stiralnye-mashiny
+- https://zavkrov.ru/magazin/folder/vodostochnaya-sistema-kruglogo-secheniya-grand-line
+- https://zavkrov.ru/magazin/folder/vodostochnaya-sistema-plastik-altaprofil
+- https://zavkrov.ru/magazin/folder/vodostochnaya-sistema-plastik-docke
+- https://zavkrov.ru/magazin/folder/dobornyye-elementy-krovli
+- https://zavkrov.ru/magazin/folder/sistemy-bezopasnosti-krovli
+- https://zavkrov.ru/magazin/folder/krovelnaya-ventilyatsiya
+- https://zavkrov.ru/magazin/folder/soputstvuyushchiye-tovary
+- https://zavkrov.ru/magazin/folder/sayding-metallicheskiy
+- https://zavkrov.ru/magazin/folder/sajding-grand-line
+- https://zavkrov.ru/magazin/folder/sajding-alta-profil
+- https://zavkrov.ru/magazin/folder/sajshchding-yu-plast
+- https://zavkrov.ru/magazin/folder/otdelochnye-elementy-dlya-sajdinga-grandline
+- https://zavkrov.ru/magazin/folder/otdelochnye-elementy-dlya-sajdinga-alta-profil
+- https://zavkrov.ru/magazin/folder/dobornye-elementy-yu-plast
+- https://zavkrov.ru/magazin/folder/sajding-deke
+- https://zavkrov.ru/magazin/folder/tsokolnyye-paneli
+- https://zavkrov.ru/magazin/folder/komplektuyushchie-k-fasadu-gibka
+- https://zavkrov.ru/magazin/folder/fasadnye-paneli-yu-plast
+- https://zavkrov.ru/magazin/folder/fasadnye-paneli-ya-fasad-grand-line
+- https://zavkrov.ru/magazin/folder/formovannyj-sajding-alta-profil
+- https://zavkrov.ru/magazin/folder/podsistema-pod-sayding
+- https://zavkrov.ru/magazin/zabory-iz-profnastila
+- https://zavkrov.ru/magazin/folder/zabory-iz-shtaketnika
+- https://zavkrov.ru/magazin/folder/zabory-3d
+- https://zavkrov.ru/magazin/folder/truba-profilnaya-stolby-lagi
+- https://zavkrov.ru/magazin/folder/vorota-kalitki
+- https://zavkrov.ru/magazin/folder/teploizolyatsiya
+- https://zavkrov.ru/magazin/folder/gidroizolyatsiya
+- https://zavkrov.ru/magazin/folder/soputstvuyushchiye-tovary-1
+- https://zavkrov.ru/magazin/folder/teplitsy
+- https://zavkrov.ru/magazin/folder/sotovyj-polikarbonat
+- https://zavkrov.ru/magazin/folder/profilirovannyj-monolitnyj-polikarbonat
+- https://zavkrov.ru/magazin/folder/monolitnyj-polikarbonat
+
+Наблюдения в ходе решения проблемы:
+- открываем источник инфы
+- парсим из html-ки все ссылки на карточки
+- по пагинации дальше идём
+- пока неизвестно собрали ли все ссылки на каталоги
+- пагинация: /p/N, N от 0, при N=inf 404
