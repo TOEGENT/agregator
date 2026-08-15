@@ -7,7 +7,7 @@
 - https://td-svarka.ru/gazosvarochnoe-oborudovanie
 - https://td-svarka.ru/rashodnye-chasti-cut
 - https://td-svarka.ru/rashodnye-chasti-cu
-- https://td-svarka.ru/rashodnye-chasti-tig
+- https://td-svarka.ru/rashodnye-chasti-tig (пустая)
 - https://td-svarka.ru/prisposobleniya-dlya-svarochnyh-rabot
 - https://td-svarka.ru/sredstva-zashity-svarshika
 - https://td-svarka.ru/prochie-aksessuary
