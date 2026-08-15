@@ -9,15 +9,18 @@
     - ФУНДАМЕНТНЫЕ БОЛТЫ
         - https://sktmet.ru/catalog/bolty-fundamentnye/
     - МЕТИЗЫ АБРАЗИВЫ ТАКЕЛАЖ
-        - www.ural-zitar.ru
-        - www.tsunamitools.ru
+        - www.ural-zitar.ru (тот же сайт что и цунамитулз лол)
+        - www.tsunamitools.ru (только прайс-листы у групп)
     - СВАРКА
-        - http://td-svarka.ru
+        - http://td-svarka.ru (карточки имеют характеристики)
     - ВЕНТИЛЯЦИЯ
-        - https://provent.ru/
+        - https://provent.ru/ (карточки имеют характеристики)
     - КРОВЛЯ
-        - https://zavkrov.ru/?ysclid=msrq0npha3707265645
+        - https://zavkrov.ru/?ysclid=msrq0npha3707265645 (карточки имеют характеристики)
     - МЕТАЛЛ
-        - https://www.metcomplect.ru/katalog/
+        - https://www.metcomplect.ru/katalog/ (карточки НЕ имеют характеристики а таблицу)
     - ИНСТРУМЕНТЫ
-        - https://makit-russia.shop/catalogsearch/result/index/?q=дрель
+        - https://makit-russia.shop/catalogsearch/result/index/?q=дрель (карточки имеют характеристики)
+
+    наблюдения в ходе решения проблем:
+    - скорее всего задача сводится к экспорту всех товаров диллеров в БД агрегатора
