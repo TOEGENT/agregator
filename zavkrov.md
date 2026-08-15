@@ -45,3 +45,11 @@
 - пока неизвестно собрали ли все ссылки на каталоги
 - пагинация: /p/N, N от 0, при N=inf 404
 - ссылки карточек ищем по `.gr-product-name a`
+- карточки:
+    название
+        - после site-path класса сразу <h1>*NAME*</h1>
+    - card-slider__image gr_image_1x1 (a href) - только одно фото на карточку
+    описание:
+    - desc-area html_block active-area r-tabs-state-active
+    характеристки
+    - shop2-product-params

@@ -18,7 +18,7 @@
 - ссылки карточек ищем по `.category-products__item-link`
 - карточки:
     - product-card__title page-title_common-place js-name
-    - images-gallery__image
+    - images-gallery__image (парсим из предзагрузки - фотки норм размера)
     описание:
     - box-collateral__container (box-collateral__title js-toggle-button = Описание) 
     характеристки

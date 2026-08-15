@@ -19,3 +19,11 @@
 - по пагинации дальше идём
 - пагинация: page-N, при N=inf возвращает последнюю страницу
 - ссылки карточек ищем по `.wd-entities-title a`
+- карточки:
+    - product_title entry-title
+    - "product-detail-gallery__thumb"
+    - изображения уменьшенного размера - убирай суффикс "-150x150" (парсим из превью)
+    описание:
+    - woocommerce-Tabs-panel woocommerce-Tabs-panel--description panel entry-content wc-tab active
+    характеристки
+    - в описании
