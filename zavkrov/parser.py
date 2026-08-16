@@ -1,4 +1,6 @@
+import json
 import pickle
+from pathlib import Path
 from urllib.parse import urljoin
 
 import requests
@@ -44,6 +46,9 @@ catalog_urls = [
     "https://zavkrov.ru/magazin/folder/profilirovannyj-monolitnyj-polikarbonat",
     "https://zavkrov.ru/magazin/folder/monolitnyj-polikarbonat",
 ]
+
+with open(Path(__file__).parents[1] / "catalogs.json", encoding="utf-8") as file:
+    catalog_urls = [item["url"] for item in json.load(file)["zavkrov"]]
 
 headers = {"User-Agent": "Mozilla/5.0"}
 db = {}

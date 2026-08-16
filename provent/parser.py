@@ -1,5 +1,7 @@
+import json
 import pickle
 import re
+from pathlib import Path
 from urllib.parse import urljoin
 
 import requests
@@ -21,6 +23,9 @@ catalog_urls = [
     "https://provent.ru/pritochnye-klapana/",
     "https://provent.ru/izolyaciya-vozduhovodov/",
 ]
+
+with open(Path(__file__).parents[1] / "catalogs.json", encoding="utf-8") as file:
+    catalog_urls = [item["url"] for item in json.load(file)["provent"]]
 
 headers = {"User-Agent": "Mozilla/5.0"}
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
