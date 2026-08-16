@@ -1,42 +1,42 @@
 источники информации:
 
-- https://zavkrov.ru/magazin/metallocherepica
-- https://zavkrov.ru/magazin/profnastil
-- https://zavkrov.ru/magazin/folder/pylesosy
-- https://zavkrov.ru/magazin/folder/stiralnye-mashiny
-- https://zavkrov.ru/magazin/folder/vodostochnaya-sistema-kruglogo-secheniya-grand-line
-- https://zavkrov.ru/magazin/folder/vodostochnaya-sistema-plastik-altaprofil
-- https://zavkrov.ru/magazin/folder/vodostochnaya-sistema-plastik-docke
-- https://zavkrov.ru/magazin/folder/dobornyye-elementy-krovli
-- https://zavkrov.ru/magazin/folder/sistemy-bezopasnosti-krovli
-- https://zavkrov.ru/magazin/folder/krovelnaya-ventilyatsiya
-- https://zavkrov.ru/magazin/folder/soputstvuyushchiye-tovary
-- https://zavkrov.ru/magazin/folder/sayding-metallicheskiy
-- https://zavkrov.ru/magazin/folder/sajding-grand-line
-- https://zavkrov.ru/magazin/folder/sajding-alta-profil
-- https://zavkrov.ru/magazin/folder/sajshchding-yu-plast
-- https://zavkrov.ru/magazin/folder/otdelochnye-elementy-dlya-sajdinga-grandline
-- https://zavkrov.ru/magazin/folder/otdelochnye-elementy-dlya-sajdinga-alta-profil
-- https://zavkrov.ru/magazin/folder/dobornye-elementy-yu-plast
-- https://zavkrov.ru/magazin/folder/sajding-deke
-- https://zavkrov.ru/magazin/folder/tsokolnyye-paneli
-- https://zavkrov.ru/magazin/folder/komplektuyushchie-k-fasadu-gibka
-- https://zavkrov.ru/magazin/folder/fasadnye-paneli-yu-plast
-- https://zavkrov.ru/magazin/folder/fasadnye-paneli-ya-fasad-grand-line
-- https://zavkrov.ru/magazin/folder/formovannyj-sajding-alta-profil
-- https://zavkrov.ru/magazin/folder/podsistema-pod-sayding
-- https://zavkrov.ru/magazin/zabory-iz-profnastila
-- https://zavkrov.ru/magazin/folder/zabory-iz-shtaketnika
-- https://zavkrov.ru/magazin/folder/zabory-3d
-- https://zavkrov.ru/magazin/folder/truba-profilnaya-stolby-lagi
-- https://zavkrov.ru/magazin/folder/vorota-kalitki
-- https://zavkrov.ru/magazin/folder/teploizolyatsiya
-- https://zavkrov.ru/magazin/folder/gidroizolyatsiya
-- https://zavkrov.ru/magazin/folder/soputstvuyushchiye-tovary-1
-- https://zavkrov.ru/magazin/folder/teplitsy
-- https://zavkrov.ru/magazin/folder/sotovyj-polikarbonat
-- https://zavkrov.ru/magazin/folder/profilirovannyj-monolitnyj-polikarbonat
-- https://zavkrov.ru/magazin/folder/monolitnyj-polikarbonat
+- [Металлочерепица](https://zavkrov.ru/magazin/metallocherepica)
+- [Профнастил](https://zavkrov.ru/magazin/profnastil)
+- [Пылесосы](https://zavkrov.ru/magazin/folder/pylesosy)
+- [Стиральные машины](https://zavkrov.ru/magazin/folder/stiralnye-mashiny)
+- [Круглая водосточная система Grand Line](https://zavkrov.ru/magazin/folder/vodostochnaya-sistema-kruglogo-secheniya-grand-line)
+- [Пластиковая водосточная система Alta Profil](https://zavkrov.ru/magazin/folder/vodostochnaya-sistema-plastik-altaprofil)
+- [Пластиковая водосточная система Docke](https://zavkrov.ru/magazin/folder/vodostochnaya-sistema-plastik-docke)
+- [Доборные элементы кровли](https://zavkrov.ru/magazin/folder/dobornyye-elementy-krovli)
+- [Системы безопасности кровли](https://zavkrov.ru/magazin/folder/sistemy-bezopasnosti-krovli)
+- [Кровельная вентиляция](https://zavkrov.ru/magazin/folder/krovelnaya-ventilyatsiya)
+- [Сопутствующие товары для кровли](https://zavkrov.ru/magazin/folder/soputstvuyushchiye-tovary)
+- [Металлический сайдинг](https://zavkrov.ru/magazin/folder/sayding-metallicheskiy)
+- [Сайдинг Grand Line](https://zavkrov.ru/magazin/folder/sajding-grand-line)
+- [Сайдинг Alta Profil](https://zavkrov.ru/magazin/folder/sajding-alta-profil)
+- [Сайдинг Ю-Пласт](https://zavkrov.ru/magazin/folder/sajshchding-yu-plast)
+- [Отделочные элементы для сайдинга Grand Line](https://zavkrov.ru/magazin/folder/otdelochnye-elementy-dlya-sajdinga-grandline)
+- [Отделочные элементы для сайдинга Alta Profil](https://zavkrov.ru/magazin/folder/otdelochnye-elementy-dlya-sajdinga-alta-profil)
+- [Доборные элементы Ю-Пласт](https://zavkrov.ru/magazin/folder/dobornye-elementy-yu-plast)
+- [Сайдинг Docke](https://zavkrov.ru/magazin/folder/sajding-deke)
+- [Цокольные панели](https://zavkrov.ru/magazin/folder/tsokolnyye-paneli)
+- [Комплектующие для фасада](https://zavkrov.ru/magazin/folder/komplektuyushchie-k-fasadu-gibka)
+- [Фасадные панели Ю-Пласт](https://zavkrov.ru/magazin/folder/fasadnye-paneli-yu-plast)
+- [Фасадные панели Я-Фасад Grand Line](https://zavkrov.ru/magazin/folder/fasadnye-paneli-ya-fasad-grand-line)
+- [Формованный сайдинг Alta Profil](https://zavkrov.ru/magazin/folder/formovannyj-sajding-alta-profil)
+- [Подсистема под сайдинг](https://zavkrov.ru/magazin/folder/podsistema-pod-sayding)
+- [Заборы из профнастила](https://zavkrov.ru/magazin/zabory-iz-profnastila)
+- [Заборы из штакетника](https://zavkrov.ru/magazin/folder/zabory-iz-shtaketnika)
+- [Заборы 3D](https://zavkrov.ru/magazin/folder/zabory-3d)
+- [Профильные трубы, столбы и лаги](https://zavkrov.ru/magazin/folder/truba-profilnaya-stolby-lagi)
+- [Ворота и калитки](https://zavkrov.ru/magazin/folder/vorota-kalitki)
+- [Теплоизоляция](https://zavkrov.ru/magazin/folder/teploizolyatsiya)
+- [Гидроизоляция](https://zavkrov.ru/magazin/folder/gidroizolyatsiya)
+- [Сопутствующие строительные товары](https://zavkrov.ru/magazin/folder/soputstvuyushchiye-tovary-1)
+- [Теплицы](https://zavkrov.ru/magazin/folder/teplitsy)
+- [Сотовый поликарбонат](https://zavkrov.ru/magazin/folder/sotovyj-polikarbonat)
+- [Профилированный монолитный поликарбонат](https://zavkrov.ru/magazin/folder/profilirovannyj-monolitnyj-polikarbonat)
+- [Монолитный поликарбонат](https://zavkrov.ru/magazin/folder/monolitnyj-polikarbonat)
 
 Наблюдения в ходе решения проблемы:
 - открываем источник инфы

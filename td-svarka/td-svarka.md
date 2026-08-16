@@ -1,18 +1,18 @@
 источники информации:
 
-- https://td-svarka.ru/svarochnye-apparaty
-- https://td-svarka.ru/lazernaya-svarka-i-rezka
-- https://td-svarka.ru/svarochnye-elektrody
-- https://td-svarka.ru/svarochnye-materialy
-- https://td-svarka.ru/gazosvarochnoe-oborudovanie
-- https://td-svarka.ru/rashodnye-chasti-cut
-- https://td-svarka.ru/rashodnye-chasti-cu
-- https://td-svarka.ru/rashodnye-chasti-tig (пустая)
-- https://td-svarka.ru/prisposobleniya-dlya-svarochnyh-rabot
-- https://td-svarka.ru/sredstva-zashity-svarshika
-- https://td-svarka.ru/prochie-aksessuary
-- https://td-svarka.ru/svarochnaya-himiya
-- https://td-svarka.ru/elektrogeneratory
+- [Сварочные аппараты](https://td-svarka.ru/svarochnye-apparaty)
+- [Лазерная сварка и резка](https://td-svarka.ru/lazernaya-svarka-i-rezka)
+- [Сварочные электроды](https://td-svarka.ru/svarochnye-elektrody)
+- [Сварочные материалы](https://td-svarka.ru/svarochnye-materialy)
+- [Газосварочное оборудование](https://td-svarka.ru/gazosvarochnoe-oborudovanie)
+- [Расходные части CUT](https://td-svarka.ru/rashodnye-chasti-cut)
+- [Расходные части CU](https://td-svarka.ru/rashodnye-chasti-cu)
+- [Расходные части TIG](https://td-svarka.ru/rashodnye-chasti-tig) (пустая)
+- [Приспособления для сварочных работ](https://td-svarka.ru/prisposobleniya-dlya-svarochnyh-rabot)
+- [Средства защиты сварщика](https://td-svarka.ru/sredstva-zashity-svarshika)
+- [Прочие аксессуары](https://td-svarka.ru/prochie-aksessuary)
+- [Сварочная химия](https://td-svarka.ru/svarochnaya-himiya)
+- [Электрогенераторы](https://td-svarka.ru/elektrogeneratory)
 
 Наблюдения в ходе решения проблемы:
 - открываем источник инфы

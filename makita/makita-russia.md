@@ -2,13 +2,13 @@
 источники информации:
 
 ссылки на каталоги:
-- https://makita-russia.shop/elektroinstrument
-- https://makita-russia.shop/nabori-elektroinstrumenta
-- https://makita-russia.shop/sadovaya-tehnika
-- https://makita-russia.shop/ruchnoy-instrument
-- https://makita-russia.shop/osnastka
-- https://makita-russia.shop/sistemy-hraneniya
-- https://makita-russia.shop/prinadlezhnosti-i-specodezhda
+- [Электроинструмент](https://makita-russia.shop/elektroinstrument)
+- [Наборы электроинструмента](https://makita-russia.shop/nabori-elektroinstrumenta)
+- [Садовая техника](https://makita-russia.shop/sadovaya-tehnika)
+- [Ручной инструмент](https://makita-russia.shop/ruchnoy-instrument)
+- [Оснастка](https://makita-russia.shop/osnastka)
+- [Системы хранения](https://makita-russia.shop/sistemy-hraneniya)
+- [Принадлежности и спецодежда](https://makita-russia.shop/prinadlezhnosti-i-specodezhda)
 
 Наблюдения в ходе решения проблемы:
 - открываем источник инфы
