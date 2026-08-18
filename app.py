@@ -12,6 +12,12 @@ DEALER_NAMES = {
     "provent": "Provent",
     "zavkrov": "Завод Кровля",
 }
+CATEGORY_NAMES = {
+    "makita": "Инструменты",
+    "td-svarka": "Сварка",
+    "provent": "Вентиляция",
+    "zavkrov": "Кровля",
+}
 
 with (ROOT / "catalogs.json").open(encoding="utf-8") as file:
     CATALOGS = json.load(file)
@@ -28,22 +34,52 @@ app = Flask(__name__)
 
 @app.route("/")
 def index():
-    catalogs = []
+    dealers = []
     for dealer, dealer_catalogs in CATALOGS.items():
         db = DATABASES.get(dealer, {})
+        catalog_count = 0
+        product_count = 0
         for number, catalog in enumerate(dealer_catalogs):
             products = db.get(catalog["url"])
             if products is not None:
-                catalogs.append(
-                    {
-                        "name": catalog["name"],
-                        "dealer": DEALER_NAMES[dealer],
-                        "dealer_id": dealer,
-                        "number": number,
-                        "count": len(products),
-                    }
-                )
-    return render_template("index.html", catalogs=catalogs)
+                catalog_count += 1
+                product_count += len(products)
+        if catalog_count:
+            dealers.append(
+                {
+                    "id": dealer,
+                    "name": CATEGORY_NAMES[dealer],
+                    "catalog_count": catalog_count,
+                    "product_count": product_count,
+                }
+            )
+    return render_template("index.html", dealers=dealers)
+
+
+@app.route("/category/<dealer>")
+def category(dealer):
+    if dealer not in CATALOGS or dealer not in DATABASES:
+        return "Категория не найдена", 404
+
+    catalogs = []
+    db = DATABASES[dealer]
+    for number, catalog in enumerate(CATALOGS[dealer]):
+        products = db.get(catalog["url"])
+        if products is not None:
+            catalogs.append(
+                {
+                    "name": catalog["name"],
+                    "number": number,
+                    "count": len(products),
+                }
+            )
+
+    return render_template(
+        "category.html",
+        dealer_id=dealer,
+        category=CATEGORY_NAMES[dealer],
+        catalogs=catalogs,
+    )
 
 
 @app.route("/search")
@@ -114,7 +150,7 @@ def catalog(dealer, number):
         return "Каталог не найден", 404
 
     cards = []
-    for product_url, card in products.items():
+    for product_number, (product_url, card) in enumerate(products.items()):
         stats = card.get("stats", {})
         search_text = " ".join(
             [
@@ -127,6 +163,7 @@ def catalog(dealer, number):
         cards.append(
             {
                 "url": product_url,
+                "number": product_number,
                 "name": card.get("name", "Без названия"),
                 "images": card.get("images", []),
                 "description": card.get("description", ""),
@@ -138,9 +175,44 @@ def catalog(dealer, number):
     return render_template(
         "catalog.html",
         catalog=catalog_data,
+        catalog_number=number,
+        dealer_id=dealer,
         dealer=DEALER_NAMES[dealer],
         cards=cards,
         query=request.args.get("q", ""),
+    )
+
+
+@app.route("/product/<dealer>/<int:catalog_number>/<int:product_number>")
+def product(dealer, catalog_number, product_number):
+    if dealer not in CATALOGS or dealer not in DATABASES:
+        return "Товар не найден", 404
+    if catalog_number < 0 or catalog_number >= len(CATALOGS[dealer]):
+        return "Товар не найден", 404
+
+    catalog_data = CATALOGS[dealer][catalog_number]
+    products = DATABASES[dealer].get(catalog_data["url"])
+    if products is None:
+        return "Товар не найден", 404
+
+    product_items = list(products.items())
+    if product_number < 0 or product_number >= len(product_items):
+        return "Товар не найден", 404
+
+    product_url, card = product_items[product_number]
+    return render_template(
+        "product.html",
+        catalog=catalog_data,
+        catalog_number=catalog_number,
+        dealer_id=dealer,
+        dealer=DEALER_NAMES[dealer],
+        card={
+            "url": product_url,
+            "name": card.get("name", "Без названия"),
+            "images": card.get("images", []),
+            "description": card.get("description", ""),
+            "stats": card.get("stats", {}),
+        },
     )
 
 
