@@ -1,7 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
-<span class="eyebrow">Единый каталог</span><h1>Комплексные поставки<br>на строительные объекты</h1>
-<p class="lead">Инструмент, сварочное оборудование, вентиляция и кровельные материалы от проверенных поставщиков.</p>
+<span class="eyebrow"></span><h1>Комплексные поставки<br>на строительные объекты</h1>
 <form class="toolbar search-form" action="{{ url_for('search') }}" method="get"><input name="q" type="search" placeholder="Название, модель или характеристика" aria-label="Поиск по каталогу" required><button type="submit">Найти товар</button></form>
 <h2>Категории</h2><div class="catalogs">{% for dealer in dealers %}<a class="catalog-link" href="{{ url_for('category', dealer=dealer.id) }}"><span class="eyebrow">Категория</span><strong>{{ dealer.name }}</strong><span class="muted">{{ dealer.catalog_count }} каталогов · {{ dealer.product_count }} товаров →</span></a>{% endfor %}</div>
 {% endblock %}
