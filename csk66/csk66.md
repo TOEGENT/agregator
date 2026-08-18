@@ -21,3 +21,4 @@
     - описание - div.p-product__description description
     - картинки - img.p-product__gallery-thumbs-image-box (меняем в ссылке с 150_150 на 750_750, ссылка без https://csk66.ru/)
 
+-  при переходе последний каталог у base_url у csk66 удаляется. Например, с https://csk66.ru/catalog/metizy/ при перехое на /samorezy_i_shurupy/ -> https://csk66.ru/catalog/samorezy_i_shurupy/
