@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Поиск: {{ query }} — СнабГарант{% endblock %}
+{% block title %}Поиск: {{ query }} — СнабГарант-НТ{% endblock %}
 {% block content %}
 <a class="back" href="{{ url_for('index') }}">← Вернуться к каталогам</a><span class="eyebrow">Результаты поиска</span><h1>«{{ query }}»</h1>
 {% if matches %}<p class="lead">Выберите подходящий раздел каталога.</p><ul class="results">{% for match in matches %}<li><a href="{{ url_for('catalog', dealer=match.dealer_id, number=match.number, q=query) }}"><strong>{{ match.name }}</strong><br><span class="muted">{{ match.dealer }} · найдено {{ match.count }}</span></a></li>{% endfor %}</ul>{% else %}<p class="lead">Ничего не найдено — попробуйте изменить запрос.</p>{% endif %}

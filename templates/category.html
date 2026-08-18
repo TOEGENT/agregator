@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% block title %}{{ category }} — СнабГарант-НТ{% endblock %}
+{% block content %}
+<a class="back" href="{{ url_for('index') }}">← Все категории</a><span class="eyebrow">Категория</span><h1>{{ category }}</h1><p class="lead">Выберите каталог.</p>
+<div class="catalogs">{% for catalog in catalogs %}<a class="catalog-link" href="{{ url_for('catalog', dealer=dealer_id, number=catalog.number) }}"><span class="eyebrow">{{ category }}</span><strong>{{ catalog.name }}</strong><span class="muted">{{ catalog.count }} товаров →</span></a>{% endfor %}</div>
+{% endblock %}
