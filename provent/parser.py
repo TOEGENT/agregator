@@ -1,113 +1,122 @@
-import json
 import pickle
 import re
-from pathlib import Path
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlparse
 
 import requests
 import urllib3
 from bs4 import BeautifulSoup
 
 
-catalog_urls = [
-    "https://provent.ru/ventustanovki-alpha/",
-    "https://provent.ru/gibkie-vozduhovody-provent/",
-    "https://provent.ru/kollectori-provent/",
-    "https://provent.ru/plenumi-provent/",
-    "https://provent.ru/shhelevye-diffuzory/",
-    "https://provent.ru/klapany-vozdushnye/",
-    "https://provent.ru/anemostati-provent/",
-    "https://provent.ru/aksessuari-provent/",
-    "https://provent.ru/ulichnye-reshetki-provent/",
-    "https://provent.ru/shumoglushiteli-provent/",
-    "https://provent.ru/pritochnye-klapana/",
-    "https://provent.ru/izolyaciya-vozduhovodov/",
-]
-
-with open(Path(__file__).parents[1] / "catalogs.json", encoding="utf-8") as file:
-    catalog_urls = [item["url"] for item in json.load(file)["provent"]]
-
+base_url = "https://provent.ru"
 headers = {"User-Agent": "Mozilla/5.0"}
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-db = {}
 
-for catalog_number, catalog_url in enumerate(catalog_urls, start=1):
-    db[catalog_url] = {}
+
+# На главной странице находим меню "Продукция".
+# Каждый li содержит ссылку на каталог, а вложенный ul содержит его подкаталоги.
+# Рекурсивно добавляем ID подкаталогов в children и одновременно заполняем reverse.
+# URL нужны только парсеру карточек и в итоговый pickle не попадут.
+def get_catalog_links(url):
+    response = requests.get(url, headers=headers, verify=False)
+    response.raise_for_status()
+    soup = BeautifulSoup(response.text, "lxml")
+
+    catalogs = {"root": {"title": "Каталог", "children": []}}
+    reverse = {}
+    catalog_urls = {}
+    product_menu = soup.select_one("li.menu-item-sticky-products")
+    product_list = product_menu.select_one("ul.wd-sub-menu")
+
+    def add_catalog(item, parent_id):
+        link = item.find("a", href=True, recursive=False)
+        if link is None:
+            return
+        catalog_url = urljoin(base_url, link["href"])
+        catalog_id = urlparse(catalog_url).path.rstrip("/").split("/")[-1]
+        title = link.get_text(" ", strip=True)
+        catalogs[catalog_id] = {"title": title, "children": []}
+        catalogs[parent_id]["children"].append(catalog_id)
+        reverse[catalog_id] = parent_id
+        catalog_urls[catalog_id] = catalog_url
+        print("CATALOG:", catalog_id, title, "->", parent_id)
+
+        child_list = item.find("ul", class_="wd-sub-menu")
+        if child_list is not None:
+            for child in child_list.find_all("li", recursive=False):
+                add_catalog(child, catalog_id)
+
+    for item in product_list.find_all("li", recursive=False):
+        add_catalog(item, "root")
+    return catalogs, reverse, catalog_urls
+
+
+def get_catalog_cards(url):
+    card_urls = []
     page = 1
-
     while True:
-        page_url = catalog_url if page == 1 else catalog_url + f"page-{page}/"
-        print(1)
+        page_url = url if page == 1 else url + f"page-{page}/"
+        print("GET CATALOG PAGE:", page_url)
         response = requests.get(page_url, headers=headers, verify=False)
-        print(2)
         response.raise_for_status()
         soup = BeautifulSoup(response.text, "lxml")
-
-        card_urls = []
+        page_cards = []
         for item in soup.select(".wd-entities-title a[href]"):
-            card_url = urljoin(catalog_url, item["href"])
-            if card_url not in db[catalog_url] and card_url not in card_urls:
-                card_urls.append(card_url)
-
-        if not card_urls:
+            card_url = urljoin(url, item["href"])
+            if card_url not in card_urls and card_url not in page_cards:
+                page_cards.append(card_url)
+        if not page_cards:
             break
-
-        for item_number, card_url in enumerate(card_urls, start=1):
-            response = requests.get(card_url, headers=headers, verify=False)
-            response.raise_for_status()
-            soup = BeautifulSoup(response.text, "lxml")
-
-            name_tag = soup.select_one("h1.product_title")
-            name = name_tag.get_text(" ", strip=True) if name_tag else ""
-
-            images = []
-            for image_tag in soup.select(".product-detail-gallery__thumb[style]"):
-                match = re.search(r"url\([\"']?(.*?)[\"']?\)", image_tag["style"])
-                if match is None:
-                    continue
-                image_path = match.group(1).replace("-150x150", "")
-                image_url = urljoin(card_url, image_path)
-                if image_url not in images:
-                    images.append(image_url)
-
-            desc_tag = soup.select_one("#tab-description")
-            desc = desc_tag.get_text(" ", strip=True) if desc_tag else ""
-            desc = desc.replace("\xa0", " ")
-
-            stats = {}
-            for row in soup.select(".woocommerce-product-attributes-item"):
-                stat_name_tag = row.select_one(
-                    ".woocommerce-product-attributes-item__label"
-                )
-                stat_value_tag = row.select_one(
-                    ".woocommerce-product-attributes-item__value"
-                )
-                if stat_name_tag is None or stat_value_tag is None:
-                    continue
-                stat_name = stat_name_tag.get_text(" ", strip=True)
-                stat_value = stat_value_tag.get_text(" ", strip=True)
-                if stat_name:
-                    stats[stat_name] = stat_value
-
-            db[catalog_url][card_url] = {
-                "name": name,
-                "images": images,
-                "description": desc,
-                "stats": stats,
-            }
-
-            width = 30
-            filled = int(width * item_number / len(card_urls))
-            bar = "#" * filled + "-" * (width - filled)
-            print(
-                f"\rКаталог {catalog_number}/{len(catalog_urls)}, страница {page} "
-                f"[{bar}] {item_number}/{len(card_urls)}",
-                end="",
-                flush=True,
-            )
-
-        print()
+        card_urls.extend(page_cards)
+        print("CARDS FOUND:", len(card_urls))
         page += 1
+    return card_urls
 
+
+def get_card_data(url):
+    print("GET CARD:", url)
+    response = requests.get(url, headers=headers, verify=False)
+    response.raise_for_status()
+    soup = BeautifulSoup(response.text, "lxml")
+    name_tag = soup.select_one("h1.product_title")
+    name = name_tag.get_text(" ", strip=True) if name_tag else ""
+    images = []
+    for image_tag in soup.select(".product-detail-gallery__thumb[style]"):
+        match = re.search(r"url\([\"']?(.*?)[\"']?\)", image_tag["style"])
+        if match:
+            image_url = urljoin(url, match.group(1).replace("-150x150", ""))
+            if image_url not in images:
+                images.append(image_url)
+    desc_tag = soup.select_one("#tab-description")
+    description = desc_tag.get_text(" ", strip=True) if desc_tag else ""
+    stats = {}
+    for row in soup.select(".woocommerce-product-attributes-item"):
+        name_tag = row.select_one(".woocommerce-product-attributes-item__label")
+        value_tag = row.select_one(".woocommerce-product-attributes-item__value")
+        if name_tag and value_tag:
+            stats[name_tag.get_text(" ", strip=True)] = value_tag.get_text(" ", strip=True)
+    return {"name": name, "images": images, "description": description, "stats": stats}
+
+
+def get_card_id(url):
+    return "card:" + urlparse(url).path.rstrip("/").split("/")[-1]
+
+
+catalogs, reverse, catalog_urls = get_catalog_links(base_url)
+cards = {}
+leaf_ids = [item_id for item_id, item in catalogs.items() if item_id != "root" and not item["children"]]
+print("LEAF CATALOGS:", leaf_ids)
+for catalog_id in leaf_ids:
+    for card_url in get_catalog_cards(catalog_urls[catalog_id]):
+        card_id = get_card_id(card_url)
+        if card_id in cards:
+            print("DUPLICATE CARD, SKIP:", card_id)
+            continue
+        catalogs[catalog_id]["children"].append(card_id)
+        reverse[card_id] = catalog_id
+        cards[card_id] = get_card_data(card_url)
+        print("CARD ADDED:", card_id, "->", catalog_id)
+
+print("CATALOGS:", len(catalogs), "CARDS:", len(cards), "REVERSE:", len(reverse))
 with open("provent.pkl", "wb") as file:
-    pickle.dump(db, file)
+    pickle.dump({"catalogs": catalogs, "cards": cards, "reverse": reverse}, file)
+print("SAVED provent.pkl")

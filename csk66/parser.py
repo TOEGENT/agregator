@@ -1,95 +1,127 @@
+from urllib.parse import parse_qs, urljoin, urlparse
+
 from bs4 import BeautifulSoup
 import requests
 import pickle
+
+
 root = "/catalog/metizy"
-base_url = f"https://csk66.ru"
+base_url = "https://csk66.ru"
 
-def get_catalog_links(base_url,root,collected=None,reverse_collected=None):
 
-    #чтобы не было глобального списка
-    if collected==None:
-        collected = {}
-    if reverse_collected==None:
-        reverse_collected = {}
-    #чтобы не было глобального списка
+def get_id(url):
+    return urlparse(url).path.rstrip("/").split("/")[-1]
 
-    full_url = base_url+root # при скатывании в каталог меняется root
-    html = requests.get(full_url)
-    soup = BeautifulSoup(html.text,"lxml")
-    catalog_title = soup.select_one("div.p-catalog__title").text
-    catalog_subcatalogs = [item.text for item in soup.select("div.category-item__title")]
-    
-    catalog_links = [item["href"] for item in soup.select("a.category-item__link")] # '/catalog/ankery/', '/catalog/bolty/', etc.
-    
-    catalog_full_links = [base_url+catalog_link for catalog_link in catalog_links]
-    collected[catalog_title]=catalog_subcatalogs
-    collected[full_url]=catalog_full_links
-    print("FORWARD TITLE:", catalog_title, "->", catalog_subcatalogs)
-    print("FORWARD URL:", full_url, "->", catalog_full_links)
-    for subcatalog_title in catalog_subcatalogs:
-        reverse_collected[subcatalog_title]=catalog_title
-        print("REVERSE TITLE:", subcatalog_title, "->", catalog_title)
-    for catalog_full_link in catalog_full_links:
-        reverse_collected[catalog_full_link]=full_url
-        print("REVERSE URL:", catalog_full_link, "->", full_url)
-    for link in catalog_links:
-        get_catalog_links(base_url,link,collected,reverse_collected)
-    print("get_catalog_links done")
-    return collected,reverse_collected # ссылки на карточки имеют значение "[]"
 
-def get_catalog_cards(base_url,url):
-    html = requests.get(url)
-    soup = BeautifulSoup(html.text,"lxml")
-    card_links = [base_url+item.get("href") for item in soup.select("a.product__title")]
-    print("get_catalog_cards done")
+def get_catalog_links(base_url, url, catalogs, reverse, catalog_urls, parent_id):
+    full_url = urljoin(base_url, url)
+    print("GET CATALOG:", full_url)
+    response = requests.get(full_url)
+    response.raise_for_status()
+    soup = BeautifulSoup(response.text, "lxml")
+
+    catalog_id = get_id(full_url)
+    catalog_title = soup.select_one("div.p-catalog__title").text.strip()
+    catalogs[catalog_id] = {"title": catalog_title, "children": []}
+    catalogs[parent_id]["children"].append(catalog_id)
+    reverse[catalog_id] = parent_id
+    catalog_urls[catalog_id] = full_url
+    print("CATALOG:", catalog_id, catalog_title, "->", parent_id)
+
+    catalog_links = [
+        urljoin(base_url, item["href"])
+        for item in soup.select("a.category-item__link")
+    ]
+    print("SUBCATALOGS:", catalog_id, catalog_links)
+    for catalog_link in catalog_links:
+        get_catalog_links(
+            base_url,
+            catalog_link,
+            catalogs,
+            reverse,
+            catalog_urls,
+            catalog_id,
+        )
+
+
+def get_catalog_cards(base_url, url):
+    card_links = []
+    page = 1
+    while True:
+        print("GET CARDS:", url, page)
+        response = requests.get(url, params={"PAGEN_1": page})
+        response.raise_for_status()
+        returned_page = parse_qs(urlparse(response.url).query).get("PAGEN_1")
+        if page > 1 and returned_page == ["1"]:
+            break
+        soup = BeautifulSoup(response.text, "lxml")
+        page_links = []
+        for item in soup.select("a.product__title"):
+            card_link = urljoin(base_url, item["href"])
+            if card_link not in card_links and card_link not in page_links:
+                page_links.append(card_link)
+        if not page_links:
+            break
+        card_links.extend(page_links)
+        print("CARDS FOUND:", len(card_links))
+        page += 1
     return card_links
 
+
 def get_card_data(url):
-    card = {}
-    html = requests.get(url)
-    soup = BeautifulSoup(html.text,"lxml")
-    card_name = soup.select_one("h1.p-product__title").text
-    card_stat_items = soup.select("div.p-product__parameters-item")
+    print("GET CARD:", url)
+    response = requests.get(url)
+    response.raise_for_status()
+    soup = BeautifulSoup(response.text, "lxml")
 
-    card["name"] = card_name
-    card["stats"] = {}
-    for card_stat_item in card_stat_items:
-        card_stat_item_name = card_stat_item.select_one("div.p-product__parameters-name").text
-        card_stat_item_text = card_stat_item.select_one("div.p-product__parameters-text").text
-        card["stats"][card_stat_item_name] = card_stat_item_text
-    try:
-        card["desc"] = soup.select_one("div.p-product__description").text
-    except AttributeError:
-        card["desc"] = ""
+    name = soup.select_one("h1.p-product__title").text.strip()
+    stats = {}
+    for item in soup.select("div.p-product__parameters-item"):
+        stat_name = item.select_one("div.p-product__parameters-name").text.strip()
+        stat_value = item.select_one("div.p-product__parameters-text").text.strip()
+        stats[stat_name] = stat_value
 
-    card_img_links = [base_url+item["data-src"].replace("150_150","500_500") for item in soup.select("img.p-product__gallery-thumbs-image")]
-    card["img_links"] = card_img_links
-    print("get_card_data done")
-    return card
+    description_tag = soup.select_one("div.p-product__description")
+    description = description_tag.text.strip() if description_tag else ""
+    images = [
+        urljoin(base_url, item["data-src"].replace("150_150", "500_500"))
+        for item in soup.select("img.p-product__gallery-thumbs-image")
+    ]
+    print("CARD DATA:", name)
+    return {
+        "name": name,
+        "images": images,
+        "description": description,
+        "stats": stats,
+    }
 
-db,reverse_db = get_catalog_links(base_url,root)
-cards = []
 
-catalog_links = [link for link in db if link.startswith("http") and db[link] == []]
-for catalog in catalog_links:
-   print("LEAF CATALOG:", catalog)
-   db[catalog] = get_catalog_cards(base_url,catalog)
-   print("CARDS:", catalog, "->", db[catalog])
-   for card_link in db[catalog]:
-       if card_link not in cards:
-           cards.append(card_link)
-           print("CARD ADDED:", card_link)
-       reverse_db[card_link] = catalog
-       print("REVERSE CARD:", card_link, "->", catalog)
-       db[card_link] = get_card_data(card_link)
+catalogs = {"root": {"title": "Каталог", "children": []}}
+cards = {}
+reverse = {}
+catalog_urls = {}
 
-print("FORWARD ITEMS:", len(db))
-print("REVERSE ITEMS:", len(reverse_db))
-print("CARDS ITEMS:", len(cards))
+get_catalog_links(base_url, root, catalogs, reverse, catalog_urls, "root")
+
+leaf_catalog_ids = [
+    catalog_id
+    for catalog_id, catalog in catalogs.items()
+    if catalog_id != "root" and catalog["children"] == []
+]
+print("LEAF CATALOGS:", leaf_catalog_ids)
+
+for catalog_id in leaf_catalog_ids:
+    for card_url in get_catalog_cards(base_url, catalog_urls[catalog_id]):
+        card_id = "card:" + get_id(card_url)
+        catalogs[catalog_id]["children"].append(card_id)
+        reverse[card_id] = catalog_id
+        cards[card_id] = get_card_data(card_url)
+        print("CARD ADDED:", card_id, "->", catalog_id)
+
+print("CATALOGS:", len(catalogs))
+print("CARDS:", len(cards))
+print("REVERSE:", len(reverse))
 print("SAVING hrefs.pkl")
-with open("hrefs.pkl","wb") as file:
-    pickle.dump({"forward":db,"reverse":reverse_db,"cards":cards},file)
+with open("hrefs.pkl", "wb") as file:
+    pickle.dump({"catalogs": catalogs, "cards": cards, "reverse": reverse}, file)
 print("SAVED hrefs.pkl")
-
-
-
