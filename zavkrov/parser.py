@@ -1,127 +1,119 @@
-import json
 import pickle
-from pathlib import Path
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlparse
 
 import requests
 from bs4 import BeautifulSoup
 
 
-catalog_urls = [
-    "https://zavkrov.ru/magazin/metallocherepica",
-    "https://zavkrov.ru/magazin/profnastil",
-    "https://zavkrov.ru/magazin/folder/pylesosy",
-    "https://zavkrov.ru/magazin/folder/stiralnye-mashiny",
-    "https://zavkrov.ru/magazin/folder/vodostochnaya-sistema-kruglogo-secheniya-grand-line",
-    "https://zavkrov.ru/magazin/folder/vodostochnaya-sistema-plastik-altaprofil",
-    "https://zavkrov.ru/magazin/folder/vodostochnaya-sistema-plastik-docke",
-    "https://zavkrov.ru/magazin/folder/dobornyye-elementy-krovli",
-    "https://zavkrov.ru/magazin/folder/sistemy-bezopasnosti-krovli",
-    "https://zavkrov.ru/magazin/folder/krovelnaya-ventilyatsiya",
-    "https://zavkrov.ru/magazin/folder/soputstvuyushchiye-tovary",
-    "https://zavkrov.ru/magazin/folder/sayding-metallicheskiy",
-    "https://zavkrov.ru/magazin/folder/sajding-grand-line",
-    "https://zavkrov.ru/magazin/folder/sajding-alta-profil",
-    "https://zavkrov.ru/magazin/folder/sajshchding-yu-plast",
-    "https://zavkrov.ru/magazin/folder/otdelochnye-elementy-dlya-sajdinga-grandline",
-    "https://zavkrov.ru/magazin/folder/otdelochnye-elementy-dlya-sajdinga-alta-profil",
-    "https://zavkrov.ru/magazin/folder/dobornye-elementy-yu-plast",
-    "https://zavkrov.ru/magazin/folder/sajding-deke",
-    "https://zavkrov.ru/magazin/folder/tsokolnyye-paneli",
-    "https://zavkrov.ru/magazin/folder/komplektuyushchie-k-fasadu-gibka",
-    "https://zavkrov.ru/magazin/folder/fasadnye-paneli-yu-plast",
-    "https://zavkrov.ru/magazin/folder/fasadnye-paneli-ya-fasad-grand-line",
-    "https://zavkrov.ru/magazin/folder/formovannyj-sajding-alta-profil",
-    "https://zavkrov.ru/magazin/folder/podsistema-pod-sayding",
-    "https://zavkrov.ru/magazin/zabory-iz-profnastila",
-    "https://zavkrov.ru/magazin/folder/zabory-iz-shtaketnika",
-    "https://zavkrov.ru/magazin/folder/zabory-3d",
-    "https://zavkrov.ru/magazin/folder/truba-profilnaya-stolby-lagi",
-    "https://zavkrov.ru/magazin/folder/vorota-kalitki",
-    "https://zavkrov.ru/magazin/folder/teploizolyatsiya",
-    "https://zavkrov.ru/magazin/folder/gidroizolyatsiya",
-    "https://zavkrov.ru/magazin/folder/soputstvuyushchiye-tovary-1",
-    "https://zavkrov.ru/magazin/folder/teplitsy",
-    "https://zavkrov.ru/magazin/folder/sotovyj-polikarbonat",
-    "https://zavkrov.ru/magazin/folder/profilirovannyj-monolitnyj-polikarbonat",
-    "https://zavkrov.ru/magazin/folder/monolitnyj-polikarbonat",
-]
-
-with open(Path(__file__).parents[1] / "catalogs.json", encoding="utf-8") as file:
-    catalog_urls = [item["url"] for item in json.load(file)["zavkrov"]]
-
+base_url = "https://zavkrov.ru"
 headers = {"User-Agent": "Mozilla/5.0"}
-db = {}
 
-for catalog_number, catalog_url in enumerate(catalog_urls, start=1):
-    db[catalog_url] = {}
+
+# Каталоги находятся во вложенных li внутри ul.gr-desktop-folders.
+# Обычный li является каталогом, вложенный ul содержит его подкаталоги.
+# folder-back и folder-parent нужны только интерфейсу сайта и пропускаются.
+# URL временно хранятся для загрузки карточек, но не сохраняются в pickle.
+def get_catalog_links(url):
+    response = requests.get(url, headers=headers)
+    response.raise_for_status()
+    soup = BeautifulSoup(response.text, "lxml")
+    menu = soup.select_one("ul.gr-desktop-folders")
+    catalogs = {"root": {"title": "Каталог", "children": []}}
+    reverse = {}
+    catalog_urls = {}
+
+    def add_catalog(item, parent_id):
+        classes = item.get("class", [])
+        if "folder-back" in classes or "folder-parent" in classes:
+            return
+        link = item.find("a", href=True, recursive=False)
+        if link is None:
+            return
+        catalog_url = urljoin(base_url, link["href"])
+        catalog_id = urlparse(catalog_url).path.rstrip("/").split("/")[-1]
+        title = item.get("data-f-name") or link.get_text(" ", strip=True)
+        catalogs[catalog_id] = {"title": title, "children": []}
+        catalogs[parent_id]["children"].append(catalog_id)
+        reverse[catalog_id] = parent_id
+        catalog_urls[catalog_id] = catalog_url
+        print("CATALOG:", catalog_id, title, "->", parent_id)
+        child_list = item.find("ul", recursive=False)
+        if child_list:
+            for child in child_list.find_all("li", recursive=False):
+                add_catalog(child, catalog_id)
+
+    for item in menu.find_all("li", recursive=False):
+        add_catalog(item, "root")
+    return catalogs, reverse, catalog_urls
+
+
+def get_catalog_cards(url):
+    card_urls = []
     page = 0
-
     while True:
-        page_url = catalog_url + f"/p/{page}"
+        page_url = url + f"/p/{page}"
+        print("GET CATALOG PAGE:", page_url)
         response = requests.get(page_url, headers=headers)
         if response.status_code == 404:
             break
         response.raise_for_status()
         soup = BeautifulSoup(response.text, "lxml")
-
-        card_urls = []
+        page_cards = []
         for item in soup.select(".gr-product-name a[href]"):
-            card_url = urljoin(catalog_url, item["href"])
-            if card_url not in db[catalog_url] and card_url not in card_urls:
-                card_urls.append(card_url)
-
-        if not card_urls:
+            card_url = urljoin(url, item["href"])
+            if card_url not in card_urls and card_url not in page_cards:
+                page_cards.append(card_url)
+        if not page_cards:
             break
-
-        for item_number, card_url in enumerate(card_urls, start=1):
-            response = requests.get(card_url, headers=headers)
-            response.raise_for_status()
-            soup = BeautifulSoup(response.text, "lxml")
-
-            name_tag = soup.select_one(".gr-container__headline h1")
-            name = name_tag.get_text(" ", strip=True) if name_tag else ""
-
-            images = []
-            for image_tag in soup.select(".card-slider__image a[href]"):
-                image_url = urljoin(card_url, image_tag["href"])
-                if image_url not in images:
-                    images.append(image_url)
-
-            desc_tag = soup.select_one(".desc-area.html_block")
-            desc = desc_tag.get_text(" ", strip=True) if desc_tag else ""
-            desc = desc.replace("\xa0", " ")
-
-            stats = {}
-            for stat_row in soup.select(".shop2-product-params .param-item"):
-                stat_name_tag = stat_row.select_one(".param-title")
-                stat_value_tag = stat_row.select_one(".param-body")
-                if stat_name_tag is None or stat_value_tag is None:
-                    continue
-                stat_name = stat_name_tag.get_text(" ", strip=True)
-                stat_value = stat_value_tag.get_text(" ", strip=True)
-                if stat_name:
-                    stats[stat_name] = stat_value
-
-            db[catalog_url][card_url] = {
-                "name": name,
-                "images": images,
-                "description": desc,
-                "stats": stats,
-            }
-
-            width = 30
-            filled = int(width * item_number / len(card_urls))
-            bar = "#" * filled + "-" * (width - filled)
-            print(
-                f"\rКаталог {catalog_number}/{len(catalog_urls)}, страница {page} "
-                f"[{bar}] {item_number}/{len(card_urls)}",
-                end="",
-                flush=True,
-            )
-
-        print()
+        card_urls.extend(page_cards)
+        print("CARDS FOUND:", len(card_urls))
         page += 1
+    return card_urls
 
+
+def get_card_data(url):
+    print("GET CARD:", url)
+    response = requests.get(url, headers=headers)
+    response.raise_for_status()
+    soup = BeautifulSoup(response.text, "lxml")
+    name_tag = soup.select_one(".gr-container__headline h1")
+    name = name_tag.get_text(" ", strip=True) if name_tag else ""
+    images = []
+    for image_tag in soup.select(".card-slider__image a[href]"):
+        image_url = urljoin(url, image_tag["href"])
+        if image_url not in images:
+            images.append(image_url)
+    desc_tag = soup.select_one(".desc-area.html_block")
+    description = desc_tag.get_text(" ", strip=True) if desc_tag else ""
+    stats = {}
+    for row in soup.select(".shop2-product-params .param-item"):
+        name_tag = row.select_one(".param-title")
+        value_tag = row.select_one(".param-body")
+        if name_tag and value_tag:
+            stats[name_tag.get_text(" ", strip=True)] = value_tag.get_text(" ", strip=True)
+    return {"name": name, "images": images, "description": description, "stats": stats}
+
+
+def get_card_id(url):
+    return "card:" + urlparse(url).path.rstrip("/").split("/")[-1]
+
+
+catalogs, reverse, catalog_urls = get_catalog_links(base_url)
+cards = {}
+leaf_ids = [item_id for item_id, item in catalogs.items() if item_id != "root" and not item["children"]]
+print("LEAF CATALOGS:", leaf_ids)
+for catalog_id in leaf_ids:
+    for card_url in get_catalog_cards(catalog_urls[catalog_id]):
+        card_id = get_card_id(card_url)
+        if card_id in cards:
+            print("DUPLICATE CARD, SKIP:", card_id)
+            continue
+        catalogs[catalog_id]["children"].append(card_id)
+        reverse[card_id] = catalog_id
+        cards[card_id] = get_card_data(card_url)
+        print("CARD ADDED:", card_id, "->", catalog_id)
+
+print("CATALOGS:", len(catalogs), "CARDS:", len(cards), "REVERSE:", len(reverse))
 with open("zavkrov.pkl", "wb") as file:
-    pickle.dump(db, file)
+    pickle.dump({"catalogs": catalogs, "cards": cards, "reverse": reverse}, file)
+print("SAVED zavkrov.pkl")
