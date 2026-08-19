@@ -30,6 +30,28 @@ def get_catalog_cards(base_url,url):
     card_links = [base_url+item.get("href") for item in soup.select("a.product__title")]
     return card_links
 
+def get_card_data(url):
+    card = {}
+    html = requests.get(url)
+    soup = BeautifulSoup(html.text,"lxml")
+    card_name = soup.select_one("h1.p-product__title").text
+    card_stat_items = soup.select("div.p-product__parameters-item")
+
+    card["name"] = card_name
+    card["stats"] = {}
+    for card_stat_item in card_stat_items:
+        card_stat_item_name = card_stat_item.select_one("div.p-product__parameters-name").text
+        card_stat_item_text = card_stat_item.select_one("div.p-product__parameters-text").text
+        card["stats"][card_stat_item_name] = card_stat_item_text
+    try:
+        card["desc"] = soup.select_one("div.p-product__description").text
+    except AttributeError:
+        card["desc"] = ""
+
+    card_img_links = [base_url+item["data-src"].replace("150_150","500_500") for item in soup.select("img.p-product__gallery-thumbs-image")]
+    card["img_links"] = card_img_links
+    return card
+
 
 """
 catalog_links = [link for link in db if db[link] == []]
@@ -44,4 +66,5 @@ for catalog in catalog_links:
 
 card_url = "https://csk66.ru/product/shurup_shpilka_m12kh300mm/"
 result = get_card_data(card_url)
+print(result)
 
