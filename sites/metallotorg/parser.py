@@ -103,6 +103,9 @@ def get_catalog_cards(url):
             '.info-content-box .tbl-inner-wrap > table > tbody > tr a[target="_blank"][href]'
         ):
             card_url = urljoin(url, link["href"])
+            if "/metallobaza/--/" in urlparse(card_url).path:
+                print("INVALID CARD, SKIP:", card_url)
+                continue
             if card_url not in card_urls and card_url not in page_cards:
                 page_cards.append(card_url)
         if not page_cards:
@@ -116,6 +119,9 @@ def get_catalog_cards(url):
 def get_card_data(url):
     print("GET CARD:", url)
     response = requests.get(url, headers=headers)
+    if response.status_code == 404:
+        print("CARD 404, SKIP:", url)
+        return None
     response.raise_for_status()
     soup = BeautifulSoup(response.text, "lxml")
     name_tag = soup.select_one("h1.h2-title.section-title")
@@ -166,6 +172,8 @@ if __name__ == "__main__":
                 print("DUPLICATE CARD, SKIP:", card_id)
                 continue
             card = get_card_data(card_url)
+            if card is None:
+                continue
             catalogs[catalog_id]["children"].append(card_id)
             reverse[card_id] = catalog_id
             cards[card_id] = card
