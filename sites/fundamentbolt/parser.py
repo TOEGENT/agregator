@@ -19,7 +19,7 @@ def get_catalog_id(url):
 
 def get_catalog_links(url=base_url):
     """Collect catalog types and their direct child catalogs."""
-    catalogs = {"root": {"title": "Каталог", "children": []}}
+    catalogs = {"root": {"title": "Каталог", "dealer": "Fundamentbolt", "children": []}}
     reverse = {}
     catalog_urls = {}
 

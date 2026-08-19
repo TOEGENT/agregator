@@ -30,7 +30,7 @@ def get_catalog_links(url):
             })
 
     nav_ids = {item["nav_id"]: item["id"] for item in items}
-    catalogs = {"root": {"title": "Каталог", "children": []}}
+    catalogs = {"root": {"title": "Каталог", "dealer": "Makita", "children": []}}
     reverse = {}
     catalog_urls = {}
 

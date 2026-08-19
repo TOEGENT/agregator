@@ -96,7 +96,7 @@ def get_card_data(url):
     }
 
 
-catalogs = {"root": {"title": "Каталог", "children": []}}
+catalogs = {"root": {"title": "Каталог", "dealer": "ЦСК", "children": []}}
 cards = {}
 reverse = {}
 catalog_urls = {}
