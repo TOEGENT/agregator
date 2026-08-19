@@ -1,4 +1,5 @@
 import pickle
+from pathlib import Path
 from urllib.parse import urljoin, urlparse
 
 import requests
@@ -7,17 +8,18 @@ from bs4 import BeautifulSoup
 
 base_url = "https://spk.ru"
 headers = {"User-Agent": "Mozilla/5.0"}
+timeout = 30
 
 
 # Всё дерево находится в меню главной страницы и имеет три уровня:
 # main-item -> first-children -> second-children.
 # URL нужны только для запросов; в pickle сохраняются ID, названия и связи.
 def get_catalog_links(url):
-    response = requests.get(url, headers=headers)
+    response = requests.get(url, headers=headers, timeout=timeout)
     response.raise_for_status()
     print(1)
     soup = BeautifulSoup(response.text, "lxml")
-    catalogs = {"root": {"title": "Каталог", "children": []}}
+    catalogs = {"root": {"title": "Каталог", "dealer": "СПК", "children": []}}
     reverse = {}
     catalog_urls = {}
 
@@ -56,7 +58,9 @@ def get_catalog_cards(url):
     page = 1
     while True:
         print("GET CATALOG:", url, page)
-        response = requests.get(url, params={"page": page}, headers=headers)
+        response = requests.get(
+            url, params={"page": page}, headers=headers, timeout=timeout
+        )
         if response.status_code == 404:
             break
         response.raise_for_status()
@@ -76,7 +80,7 @@ def get_catalog_cards(url):
 
 def get_card_data(url):
     print("GET CARD:", url)
-    response = requests.get(url, headers=headers)
+    response = requests.get(url, headers=headers, timeout=timeout)
     response.raise_for_status()
     soup = BeautifulSoup(response.text, "lxml")
     name_tag = soup.select_one("h1.product__title")
@@ -105,22 +109,48 @@ def get_card_id(url):
     return "card:" + urlparse(url).path.rstrip("/").split("/")[-1]
 
 
-catalogs, reverse, catalog_urls = get_catalog_links(base_url)
-cards = {}
-leaf_ids = [item_id for item_id, item in catalogs.items() if item_id != "root" and not item["children"]]
-print("LEAF CATALOGS:", leaf_ids)
-for catalog_id in leaf_ids:
-    for card_url in get_catalog_cards(catalog_urls[catalog_id]):
-        card_id = get_card_id(card_url)
-        if card_id in cards:
-            print("DUPLICATE CARD, SKIP:", card_id)
-            continue
-        catalogs[catalog_id]["children"].append(card_id)
-        reverse[card_id] = catalog_id
-        cards[card_id] = get_card_data(card_url)
-        print("CARD ADDED:", card_id, "->", catalog_id)
+def save_db(path, catalogs, cards, reverse):
+    temporary = path.with_suffix(path.suffix + ".tmp")
+    with temporary.open("wb") as file:
+        pickle.dump({"catalogs": catalogs, "cards": cards, "reverse": reverse}, file)
+    temporary.replace(path)
 
-print("CATALOGS:", len(catalogs), "CARDS:", len(cards), "REVERSE:", len(reverse))
-with open("spk.pkl", "wb") as file:
-    pickle.dump({"catalogs": catalogs, "cards": cards, "reverse": reverse}, file)
-print("SAVED spk.pkl")
+
+def main():
+    catalogs = {"root": {"title": "Каталог", "dealer": "СПК", "children": []}}
+    reverse = {}
+    catalog_urls = {}
+    cards = {}
+    try:
+        catalogs, reverse, catalog_urls = get_catalog_links(base_url)
+        leaf_ids = [
+            item_id
+            for item_id, item in catalogs.items()
+            if item_id != "root" and not item["children"]
+        ]
+        print("LEAF CATALOGS:", leaf_ids)
+        for catalog_id in leaf_ids:
+            for card_url in get_catalog_cards(catalog_urls[catalog_id]):
+                card_id = get_card_id(card_url)
+                if card_id in cards:
+                    print("DUPLICATE CARD, SKIP:", card_id)
+                    continue
+                card = get_card_data(card_url)
+                catalogs[catalog_id]["children"].append(card_id)
+                reverse[card_id] = catalog_id
+                cards[card_id] = card
+                print("CARD ADDED:", card_id, "->", catalog_id)
+    except requests.exceptions.Timeout as error:
+        save_db(Path("spk.partial.pkl"), catalogs, cards, reverse)
+        print("TIMEOUT, SAVED spk.partial.pkl:", error)
+        return False
+
+    print("CATALOGS:", len(catalogs), "CARDS:", len(cards), "REVERSE:", len(reverse))
+    save_db(Path("spk.pkl"), catalogs, cards, reverse)
+    print("SAVED spk.pkl")
+    return True
+
+
+if __name__ == "__main__":
+    if not main():
+        raise SystemExit(1)
