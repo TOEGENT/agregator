@@ -3,6 +3,15 @@ import pickle
 from pathlib import Path
 
 
+def is_card_id(item_id):
+    parts = str(item_id).split(":")
+    return bool(parts) and (parts[0] == "card" or "card" in parts[1:-1])
+
+
+def valid_text(value):
+    return isinstance(value, str) and bool(value.strip())
+
+
 def validate(path):
     errors = []
     warnings = []
@@ -26,6 +35,25 @@ def validate(path):
         errors.append("catalogs: отсутствует root")
     if set(catalogs) & set(cards):
         errors.append("ID каталогов и карточек пересекаются")
+
+    root = catalogs.get("root")
+    if isinstance(root, dict):
+        if "dealer" in root:
+            if not valid_text(root["dealer"]):
+                errors.append("catalogs['root']: пустой или неверный dealer")
+        else:
+            root_children = root.get("children", [])
+            if isinstance(root_children, list):
+                for section_id in root_children:
+                    section = catalogs.get(section_id)
+                    if not isinstance(section, dict):
+                        errors.append(
+                            f"catalogs['root']: раздел {section_id!r} не является каталогом"
+                        )
+                    elif not valid_text(section.get("dealer")):
+                        errors.append(
+                            f"catalogs[{section_id!r}]: отсутствует или неверный dealer"
+                        )
 
     for catalog_id, catalog in catalogs.items():
         if not isinstance(catalog, dict):
@@ -62,8 +90,10 @@ def validate(path):
         "stats": dict,
     }
     for card_id, card in cards.items():
-        if not str(card_id).startswith("card:"):
-            errors.append(f"cards[{card_id!r}]: ID должен начинаться с card:")
+        if not is_card_id(card_id):
+            errors.append(
+                f"cards[{card_id!r}]: ожидается card:<id> или <source>:card:<id>"
+            )
         if not isinstance(card, dict):
             errors.append(f"cards[{card_id!r}]: должна быть словарём")
             continue
@@ -78,6 +108,29 @@ def validate(path):
             errors.append(f"cards[{card_id!r}]: images содержит не строки")
 
     all_ids = set(catalogs) | set(cards)
+    if isinstance(root, dict) and "dealer" not in root:
+        for section_id in root.get("children", []):
+            section = catalogs.get(section_id)
+            if not isinstance(section, dict):
+                continue
+            section_children = section.get("children", [])
+            pending = list(section_children) if isinstance(section_children, list) else []
+            checked = set()
+            while pending:
+                item_id = pending.pop()
+                if item_id in checked:
+                    continue
+                checked.add(item_id)
+                if not str(item_id).startswith(f"{section_id}:"):
+                    errors.append(
+                        f"{item_id!r}: отсутствует префикс раздела {section_id!r}"
+                    )
+                catalog = catalogs.get(item_id)
+                if isinstance(catalog, dict):
+                    children = catalog.get("children", [])
+                    if isinstance(children, list):
+                        pending.extend(children)
+
     for child_id, parent_id in reverse.items():
         if child_id not in all_ids:
             errors.append(f"reverse: неизвестный child {child_id!r}")
