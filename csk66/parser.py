@@ -24,21 +24,24 @@ def get_catalog_links(base_url,root,collected=None,hrefs_to_cards=None):
         get_catalog_links(base_url,link,collected,hrefs_to_cards)
     return collected # ссылки на карточки имеют значение "[]"
 
-def get_catalog_cards(url):
+def get_catalog_cards(base_url,url):
     html = requests.get(url)
     soup = BeautifulSoup(html.text,"lxml")
-    card_links = soup.select("a.product_title")
-    print(card_links)
+    card_links = [base_url+item.get("href") for item in soup.select("a.product__title")]
+    return card_links
 
 
-#result = get_catalog_links(base_url,root)
-#with open("hrefs.pkl","wb") as file:
-#    pickle.dump(result,file)
-
-with open("hrefs.pkl","rb") as file:
-    db = pickle.load(file)
-
+"""
 catalog_links = [link for link in db if db[link] == []]
 for catalog in catalog_links:
-   db[catalog] = get_catalog_cards(catalog)
+   db[catalog] = get_catalog_cards(base_url,catalog)
+   for card_link in db[catalog]:
+       db[card_link] = []
+"""
+
+#with open("hrefs.pkl","rb") as file:
+#    db= pickle.load(file)
+
+card_url = "https://csk66.ru/product/shurup_shpilka_m12kh300mm/"
+result = get_card_data(card_url)
 
