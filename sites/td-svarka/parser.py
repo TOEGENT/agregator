@@ -21,7 +21,7 @@ def get_catalog_links(url):
     response.raise_for_status()
     soup = BeautifulSoup(response.text, "lxml")
     menu = soup.select_one("ul.catalog.no-click")
-    catalogs = {"root": {"title": "Каталог", "children": []}}
+    catalogs = {"root": {"title": "Каталог", "dealer": "ТД Сварка", "children": []}}
     reverse = {}
     catalog_urls = {}
 

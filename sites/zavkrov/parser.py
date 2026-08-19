@@ -18,7 +18,7 @@ def get_catalog_links(url):
     response.raise_for_status()
     soup = BeautifulSoup(response.text, "lxml")
     menu = soup.select_one("ul.gr-desktop-folders")
-    catalogs = {"root": {"title": "Каталог", "children": []}}
+    catalogs = {"root": {"title": "Каталог", "dealer": "Завод Кровля", "children": []}}
     reverse = {}
     catalog_urls = {}
 
