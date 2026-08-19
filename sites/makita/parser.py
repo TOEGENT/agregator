@@ -50,6 +50,8 @@ def get_catalog_links(url):
     for item in soup.select(".navigation [data-link^='nav-']"):
         link = item.find("a", recursive=False)
         if link is not None and link.get("data-category-id"):
+            if urlparse(link["href"]).path.rstrip("/").lower() == "/ucenka":
+                continue
             items.append({
                 "nav_id": item["data-link"],
                 "id": link["data-category-id"],
