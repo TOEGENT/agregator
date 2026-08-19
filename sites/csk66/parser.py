@@ -3,10 +3,38 @@ from urllib.parse import parse_qs, urljoin, urlparse
 from bs4 import BeautifulSoup
 import requests
 import pickle
+import sys
+from pathlib import Path
 
 
 root = "/catalog/metizy"
 base_url = "https://csk66.ru"
+
+
+PARTIAL_FILE = "hrefs.partial.pkl"
+
+
+def save_partial_on_timeout(exc_type, exc_value, traceback):
+    if issubclass(exc_type, requests.exceptions.Timeout):
+        state = None
+        current = traceback
+        while current is not None:
+            local = current.tb_frame.f_locals
+            names = ("catalogs", "cards", "reverse")
+            if all(isinstance(local.get(name), dict) for name in names):
+                state = local
+            current = current.tb_next
+        if state is not None:
+            output = Path(PARTIAL_FILE)
+            temporary = output.with_suffix(output.suffix + ".tmp")
+            with temporary.open("wb") as file:
+                pickle.dump({name: state[name] for name in names}, file)
+            temporary.replace(output)
+            print("TIMEOUT, SAVED", PARTIAL_FILE)
+    sys.__excepthook__(exc_type, exc_value, traceback)
+
+
+sys.excepthook = save_partial_on_timeout
 
 
 def get_id(url):
@@ -113,9 +141,10 @@ print("LEAF CATALOGS:", leaf_catalog_ids)
 for catalog_id in leaf_catalog_ids:
     for card_url in get_catalog_cards(base_url, catalog_urls[catalog_id]):
         card_id = "card:" + get_id(card_url)
+        card = get_card_data(card_url)
         catalogs[catalog_id]["children"].append(card_id)
         reverse[card_id] = catalog_id
-        cards[card_id] = get_card_data(card_url)
+        cards[card_id] = card
         print("CARD ADDED:", card_id, "->", catalog_id)
 
 print("CATALOGS:", len(catalogs))

@@ -1,4 +1,6 @@
 import pickle
+import sys
+from pathlib import Path
 from urllib.parse import urljoin, urlparse
 
 import requests
@@ -7,6 +9,32 @@ from bs4 import BeautifulSoup
 
 base_url = "https://www.metallotorg.ru"
 headers = {"User-Agent": "Mozilla/5.0"}
+
+
+PARTIAL_FILE = "metallotorg.partial.pkl"
+
+
+def save_partial_on_timeout(exc_type, exc_value, traceback):
+    if issubclass(exc_type, requests.exceptions.Timeout):
+        state = None
+        current = traceback
+        while current is not None:
+            local = current.tb_frame.f_locals
+            names = ("catalogs", "cards", "reverse")
+            if all(isinstance(local.get(name), dict) for name in names):
+                state = local
+            current = current.tb_next
+        if state is not None:
+            output = Path(PARTIAL_FILE)
+            temporary = output.with_suffix(output.suffix + ".tmp")
+            with temporary.open("wb") as file:
+                pickle.dump({name: state[name] for name in names}, file)
+            temporary.replace(output)
+            print("TIMEOUT, SAVED", PARTIAL_FILE)
+    sys.__excepthook__(exc_type, exc_value, traceback)
+
+
+sys.excepthook = save_partial_on_timeout
 
 
 def get_catalog_id(url):
@@ -137,9 +165,10 @@ if __name__ == "__main__":
             if card_id in cards:
                 print("DUPLICATE CARD, SKIP:", card_id)
                 continue
+            card = get_card_data(card_url)
             catalogs[catalog_id]["children"].append(card_id)
             reverse[card_id] = catalog_id
-            cards[card_id] = get_card_data(card_url)
+            cards[card_id] = card
             print("CARD ADDED:", card_id, "->", catalog_id)
 
     print("CATALOGS:", len(catalogs), "CARDS:", len(cards), "REVERSE:", len(reverse))
