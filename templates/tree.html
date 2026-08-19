@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block title %}{{ current.title }} — СнабГарант-НТ{% endblock %}
+{% block content %}
+<nav class="back">{% for item in breadcrumbs %}{% if item.href %}<a href="{{ item.href }}">{{ item.title }}</a> → {% else %}{{ item.title }}{% endif %}{% endfor %}</nav>
+{% if is_root %}<form class="toolbar search-form" action="{{ url_for('search') }}"><input name="q" placeholder="Поиск"><button>Найти</button></form>{% endif %}
+<h1>{{ current.title }}</h1>
+<div class="catalogs">{% for item in links %}<a class="catalog-link" href="{{ item.href }}"><strong>{{ item.title }}</strong><span class="muted">Открыть →</span></a>{% endfor %}</div>
+{% endblock %}

@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block title %}{{ card.name }} — СнабГарант-НТ{% endblock %}
+{% block content %}
+<nav class="back">{% for item in breadcrumbs %}{% if item.href %}<a href="{{ item.href }}">{{ item.title }}</a> → {% else %}{{ item.title }}{% endif %}{% endfor %}</nav>
+<h1>{{ card.name }}</h1>
+<div class="product-body">{% if card.images %}<img class="product-preview" src="{{ card.images[0] }}" alt="{{ card.name }}">{% endif %}{% if card.description %}<p>{{ card.description }}</p>{% endif %}{% if card.stats %}<table>{% for name, value in card.stats.items() %}<tr><td>{{ name }}</td><td>{{ value }}</td></tr>{% endfor %}</table>{% endif %}</div>
+{% endblock %}
