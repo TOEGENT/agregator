@@ -173,7 +173,7 @@ def main():
             cards_counter+=1
             print("CARD ADDED:", card_id, "->", catalog_id,"COUNTER",cards_counter)
 
-            if cards_counter==5:
+            if cards_counter==999999:
                 remove_empty_catalogs(catalogs, reverse)
                 return catalogs,reverse,cards
     remove_empty_catalogs(catalogs, reverse)
