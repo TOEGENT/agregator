@@ -5,7 +5,7 @@ from flask import Flask, abort, jsonify, render_template, request, url_for
 
 
 app = Flask(__name__)
-with open("td-svarka.pkl", "rb") as file:
+with open("dbs/combined.pkl", "rb") as file:
     db = pickle.load(file)
 
 
