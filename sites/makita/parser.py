@@ -50,14 +50,27 @@ def get_catalog_links(url):
     for item in soup.select(".navigation [data-link^='nav-']"):
         link = item.find("a", recursive=False)
         if link is not None and link.get("data-category-id"):
-            if urlparse(link["href"]).path.rstrip("/").lower() == "/ucenka":
-                continue
             items.append({
                 "nav_id": item["data-link"],
                 "id": link["data-category-id"],
                 "title": link.find("span").text.strip(),
                 "url": link["href"],
             })
+
+    excluded_nav_ids = {
+        item["nav_id"]
+        for item in items
+        if urlparse(item["url"]).path.rstrip("/").lower() == "/ucenka"
+    }
+    items = [
+        item
+        for item in items
+        if not any(
+            item["nav_id"] == excluded_nav_id
+            or item["nav_id"].startswith(excluded_nav_id + "-")
+            for excluded_nav_id in excluded_nav_ids
+        )
+    ]
 
     nav_ids = {item["nav_id"]: item["id"] for item in items}
     catalogs = {"root": {"title": "Каталог", "dealer": "Makita", "children": []}}
@@ -136,6 +149,19 @@ def get_card_data(url):
 def get_card_id(url):
     return "card:" + urlparse(url).path.rstrip("/").split("/")[-1]
 
+def remove_empty_catalogs(catalogs, reverse):
+    changed = True
+    while changed:
+        changed = False
+        for catalog_id in list(catalogs):
+            if catalog_id == "root" or catalogs[catalog_id]["children"]:
+                continue
+            parent_id = reverse.pop(catalog_id)
+            catalogs[parent_id]["children"].remove(catalog_id)
+            del catalogs[catalog_id]
+            changed = True
+
+
 def main():
     catalogs, reverse, catalog_urls = get_catalog_links("https://makita-russia.shop")
     cards = {}
@@ -158,8 +184,10 @@ def main():
             cards[card_id] = card
             cards_counter+=1
             print("CARD ADDED:", card_id, "->", catalog_id,"COUNTER",cards_counter)
-            if cards_counter==100:
+            if cards_counter==999999:
+                remove_empty_catalogs(catalogs, reverse)
                 return catalogs,reverse,cards
+    remove_empty_catalogs(catalogs, reverse)
     return catalogs,reverse,cards
 
 catalogs,reverse,cards = main()

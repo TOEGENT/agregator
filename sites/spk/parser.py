@@ -25,7 +25,10 @@ def get_catalog_links(url):
 
     def add_catalog(link, parent_id):
         catalog_url = urljoin(base_url, link["href"])
-        catalog_id = urlparse(catalog_url).path.rstrip("/").split("/")[-1]
+        catalog_path = urlparse(catalog_url).path
+        if not catalog_path.startswith("/catalog/"):
+            return None
+        catalog_id = catalog_path.rstrip("/").split("/")[-1]
         if catalog_id in catalogs:
             return catalog_id
         catalogs[catalog_id] = {
@@ -43,11 +46,15 @@ def get_catalog_links(url):
         if main_link is None:
             continue
         main_id = add_catalog(main_link, "root")
+        if main_id is None:
+            continue
         for group in main_item.select(".desktop-catalog-menu__item-c"):
             first_link = group.select_one(".desktop-catalog-menu__first-children a[href]")
             if first_link is None:
                 continue
             first_id = add_catalog(first_link, main_id)
+            if first_id is None:
+                continue
             for second_link in group.select(".desktop-catalog-menu__second-children a[href]"):
                 add_catalog(second_link, first_id)
     return catalogs, reverse, catalog_urls
@@ -116,6 +123,19 @@ def save_db(path, catalogs, cards, reverse):
     temporary.replace(path)
 
 
+def remove_empty_catalogs(catalogs, reverse):
+    changed = True
+    while changed:
+        changed = False
+        for catalog_id in list(catalogs):
+            if catalog_id == "root" or catalogs[catalog_id]["children"]:
+                continue
+            parent_id = reverse.pop(catalog_id)
+            catalogs[parent_id]["children"].remove(catalog_id)
+            del catalogs[catalog_id]
+            changed = True
+
+
 def main():
     catalogs = {"root": {"title": "Каталог", "dealer": "СПК", "children": []}}
     reverse = {}
@@ -142,17 +162,17 @@ def main():
                 cards[card_id] = card
                 cards_counter+=1
                 print("CARD ADDED:", card_id, "->", catalog_id,"COUNTER",cards_counter)
+                if cards_counter==999999:
+                    remove_empty_catalogs(catalogs, reverse)
+                    return catalogs,reverse,cards
+        remove_empty_catalogs(catalogs, reverse)
+        return catalogs,reverse,cards
     except requests.exceptions.Timeout as error:
         save_db(Path("spk.partial.pkl"), catalogs, cards, reverse)
         print("TIMEOUT, SAVED spk.partial.pkl:", error)
         return False
 
-    print("CATALOGS:", len(catalogs), "CARDS:", len(cards), "REVERSE:", len(reverse))
-    save_db(Path("spk.pkl"), catalogs, cards, reverse)
-    print("SAVED spk.pkl")
-    return True
-
-
-if __name__ == "__main__":
-    if not main():
-        raise SystemExit(1)
+catalogs,reverse,cards = main()
+print("CATALOGS:", len(catalogs), "CARDS:", len(cards), "REVERSE:", len(reverse))
+save_db(Path("spk.pkl"), catalogs, cards, reverse)
+print("SAVED spk.pkl")

@@ -7,11 +7,10 @@ import sys
 from pathlib import Path
 
 
-root = "/catalog/metizy"
 base_url = "https://csk66.ru"
 
 
-PARTIAL_FILE = "hrefs.partial.pkl"
+PARTIAL_FILE = "csk66.partial.pkl"
 
 
 def save_partial_on_timeout(exc_type, exc_value, traceback):
@@ -41,35 +40,64 @@ def get_id(url):
     return urlparse(url).path.rstrip("/").split("/")[-1]
 
 
-def get_catalog_links(base_url, url, catalogs, reverse, catalog_urls, parent_id):
-    full_url = urljoin(base_url, url)
-    print("GET CATALOG:", full_url)
-    response = requests.get(full_url)
+def get_catalog_links(url):
+    print("GET CATALOG MENU:", url)
+    response = requests.get(url)
     response.raise_for_status()
     soup = BeautifulSoup(response.text, "lxml")
+    catalogs = {"root": {"title": "Каталог", "dealer": "ЦСК", "children": []}}
+    reverse = {}
+    catalog_urls = {}
 
-    catalog_id = get_id(full_url)
-    catalog_title = soup.select_one("div.p-catalog__title").text.strip()
-    catalogs[catalog_id] = {"title": catalog_title, "children": []}
-    catalogs[parent_id]["children"].append(catalog_id)
-    reverse[catalog_id] = parent_id
-    catalog_urls[catalog_id] = full_url
-    print("CATALOG:", catalog_id, catalog_title, "->", parent_id)
+    menu_links = soup.select(".catalog-popup__menu-item:not(.catalog-popup__menu-item_brands) a[href]")
+    layouts = soup.select(".catalog-popup__categories-layout")
+    for menu_link, layout in zip(menu_links, layouts):
+        section_id = get_id(menu_link["href"])
+        catalogs[section_id] = {
+            "title": menu_link.get_text(" ", strip=True),
+            "children": [],
+        }
+        catalogs["root"]["children"].append(section_id)
+        reverse[section_id] = "root"
+        catalog_urls[section_id] = urljoin(base_url, menu_link["href"])
 
-    catalog_links = [
-        urljoin(base_url, item["href"])
-        for item in soup.select("a.category-item__link")
-    ]
-    print("SUBCATALOGS:", catalog_id, catalog_links)
-    for catalog_link in catalog_links:
-        get_catalog_links(
-            base_url,
-            catalog_link,
-            catalogs,
-            reverse,
-            catalog_urls,
-            catalog_id,
-        )
+        for group in layout.select(".catalog-popup__category"):
+            group_link = group.select_one(".catalog-popup__category-title a[href]")
+            if group_link is None:
+                continue
+            group_id = get_id(group_link["href"])
+            catalogs[group_id] = {
+                "title": group_link.get_text(" ", strip=True),
+                "children": [],
+            }
+            catalogs[section_id]["children"].append(group_id)
+            reverse[group_id] = section_id
+            catalog_urls[group_id] = urljoin(base_url, group_link["href"])
+
+            for child_link in group.select(".catalog-popup__category-list a[href]"):
+                child_id = get_id(child_link["href"])
+                catalogs[child_id] = {
+                    "title": child_link.get_text(" ", strip=True),
+                    "children": [],
+                }
+                catalogs[group_id]["children"].append(child_id)
+                reverse[child_id] = group_id
+                catalog_urls[child_id] = urljoin(base_url, child_link["href"])
+
+    return catalogs, reverse, catalog_urls
+
+
+def remove_empty_catalogs(catalogs, reverse):
+    changed = True
+    while changed:
+        changed = False
+        for catalog_id in list(catalogs):
+            if catalog_id == "root" or catalogs[catalog_id]["children"]:
+                continue
+            parent_id = reverse.pop(catalog_id)
+            catalogs[parent_id]["children"].remove(catalog_id)
+            del catalogs[catalog_id]
+            changed = True
 
 
 def get_catalog_cards(base_url, url):
@@ -112,7 +140,7 @@ def get_card_data(url):
     description_tag = soup.select_one("div.p-product__description")
     description = description_tag.text.strip() if description_tag else ""
     images = [
-        urljoin(base_url, item["data-src"].replace("150_150", "500_500"))
+        urljoin(base_url, item["data-src"].replace("150_150", "600_293"))
         for item in soup.select("img.p-product__gallery-thumbs-image")
     ]
     print("CARD DATA:", name)
@@ -123,14 +151,10 @@ def get_card_data(url):
         "stats": stats,
     }
 
-cards_counter = 0
 def main():
-    catalogs = {"root": {"title": "Каталог", "dealer": "ЦСК", "children": []}}
+    catalogs, reverse, catalog_urls = get_catalog_links(base_url)
     cards = {}
-    reverse = {}
-    catalog_urls = {}
-
-    get_catalog_links(base_url, root, catalogs, reverse, catalog_urls, "root")
+    cards_counter = 0
 
     leaf_catalog_ids = [
         catalog_id
@@ -149,14 +173,19 @@ def main():
             cards_counter+=1
             print("CARD ADDED:", card_id, "->", catalog_id,"COUNTER",cards_counter)
 
-            if cards_counter==100:
+            if cards_counter==5:
+                remove_empty_catalogs(catalogs, reverse)
                 return catalogs,reverse,cards
+    remove_empty_catalogs(catalogs, reverse)
     return catalogs,reverse,cards
-catalogs, reverse, cards = main()
-print("CATALOGS:", len(catalogs))
-print("CARDS:", len(cards))
-print("REVERSE:", len(reverse))
-print("SAVING hrefs.pkl")
-with open("hrefs.pkl", "wb") as file:
-    pickle.dump({"catalogs": catalogs, "cards": cards, "reverse": reverse}, file)
-print("SAVED hrefs.pkl")
+
+
+if __name__ == "__main__":
+    catalogs, reverse, cards = main()
+    print("CATALOGS:", len(catalogs))
+    print("CARDS:", len(cards))
+    print("REVERSE:", len(reverse))
+    print("SAVING csk66.pkl")
+    with open("csk66.pkl", "wb") as file:
+        pickle.dump({"catalogs": catalogs, "cards": cards, "reverse": reverse}, file)
+    print("SAVED csk66.pkl")

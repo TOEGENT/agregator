@@ -135,8 +135,22 @@ def get_catalog_cards(url):
 
     return cards
 
-cards_counter = 0
+
+def remove_empty_catalogs(catalogs, reverse):
+    changed = True
+    while changed:
+        changed = False
+        for catalog_id in list(catalogs):
+            if catalog_id == "root" or catalogs[catalog_id]["children"]:
+                continue
+            parent_id = reverse.pop(catalog_id)
+            catalogs[parent_id]["children"].remove(catalog_id)
+            del catalogs[catalog_id]
+            changed = True
+
+
 def main():
+    cards_counter = 0
     catalogs, reverse, catalog_urls = get_catalog_links()
     cards = {}
     leaf_ids = [
@@ -158,8 +172,10 @@ def main():
             cards_counter+=1
             print("CARD ADDED:", card_id, "->", catalog_id,"COUNTER",cards_counter)
 
-            if cards_counter==100:
+            if cards_counter==999999:
+                remove_empty_catalogs(catalogs, reverse)
                 return catalogs,reverse,cards
+    remove_empty_catalogs(catalogs, reverse)
     return catalogs,reverse,cards
 if __name__ == "__main__":
     catalogs,reverse,cards = main()

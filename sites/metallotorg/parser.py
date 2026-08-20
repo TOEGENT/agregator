@@ -154,6 +154,19 @@ def get_card_id(url):
         path = path[len("info/metallobaza/"):]
     return "card:" + path.replace("/", ":")
 
+def remove_empty_catalogs(catalogs, reverse):
+    changed = True
+    while changed:
+        changed = False
+        for catalog_id in list(catalogs):
+            if catalog_id == "root" or catalogs[catalog_id]["children"]:
+                continue
+            parent_id = reverse.pop(catalog_id)
+            catalogs[parent_id]["children"].remove(catalog_id)
+            del catalogs[catalog_id]
+            changed = True
+
+
 def main():
     catalogs, reverse, catalog_urls = get_catalog_links()
     cards = {}
@@ -179,8 +192,10 @@ def main():
             cards[card_id] = card
             card_counter+=1
             print("CARD ADDED:", card_id, "->", catalog_id, "COUNTER", card_counter)
-            if card_counter==100:
+            if card_counter==999999:
+                remove_empty_catalogs(catalogs, reverse)
                 return catalogs,reverse,cards
+    remove_empty_catalogs(catalogs, reverse)
     return catalogs,reverse,cards
 if __name__ == "__main__":
 
