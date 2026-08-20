@@ -136,28 +136,33 @@ def get_card_data(url):
 def get_card_id(url):
     return "card:" + urlparse(url).path.rstrip("/").split("/")[-1]
 
+def main():
+    catalogs, reverse, catalog_urls = get_catalog_links("https://makita-russia.shop")
+    cards = {}
+    leaf_catalog_ids = [
+        catalog_id
+        for catalog_id, catalog in catalogs.items()
+        if catalog_id != "root" and catalog["children"] == []
+    ]
+    print("LEAF CATALOGS:", leaf_catalog_ids)
+    cards_counter = 0
+    for catalog_id in leaf_catalog_ids:
+        for card_url in get_catalog_cards(catalog_urls[catalog_id]):
+            card_id = get_card_id(card_url)
+            if card_id in cards:
+                print("DUPLICATE CARD, SKIP:", card_id)
+                continue
+            card = get_card_data(card_url)
+            catalogs[catalog_id]["children"].append(card_id)
+            reverse[card_id] = catalog_id
+            cards[card_id] = card
+            cards_counter+=1
+            print("CARD ADDED:", card_id, "->", catalog_id,"COUNTER",cards_counter)
+            if cards_counter==100:
+                return catalogs,reverse,cards
+    return catalogs,reverse,cards
 
-catalogs, reverse, catalog_urls = get_catalog_links("https://makita-russia.shop")
-cards = {}
-leaf_catalog_ids = [
-    catalog_id
-    for catalog_id, catalog in catalogs.items()
-    if catalog_id != "root" and catalog["children"] == []
-]
-print("LEAF CATALOGS:", leaf_catalog_ids)
-
-for catalog_id in leaf_catalog_ids:
-    for card_url in get_catalog_cards(catalog_urls[catalog_id]):
-        card_id = get_card_id(card_url)
-        if card_id in cards:
-            print("DUPLICATE CARD, SKIP:", card_id)
-            continue
-        card = get_card_data(card_url)
-        catalogs[catalog_id]["children"].append(card_id)
-        reverse[card_id] = catalog_id
-        cards[card_id] = card
-        print("CARD ADDED:", card_id, "->", catalog_id)
-
+catalogs,reverse,cards = main()
 print("CATALOGS:", len(catalogs))
 print("CARDS:", len(cards))
 print("REVERSE:", len(reverse))

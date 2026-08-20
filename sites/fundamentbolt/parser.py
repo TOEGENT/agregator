@@ -135,8 +135,8 @@ def get_catalog_cards(url):
 
     return cards
 
-
-if __name__ == "__main__":
+cards_counter = 0
+def main():
     catalogs, reverse, catalog_urls = get_catalog_links()
     cards = {}
     leaf_ids = [
@@ -155,7 +155,14 @@ if __name__ == "__main__":
             catalogs[catalog_id]["children"].append(card_id)
             reverse[card_id] = catalog_id
             cards[card_id] = card
-            print("CARD ADDED:", card_id, "->", catalog_id)
+            cards_counter+=1
+            print("CARD ADDED:", card_id, "->", catalog_id,"COUNTER",cards_counter)
+
+            if cards_counter==100:
+                return catalogs,reverse,cards
+    return catalogs,reverse,cards
+if __name__ == "__main__":
+    catalogs,reverse,cards = main()
 
     print("CATALOGS:", len(catalogs), "CARDS:", len(cards), "REVERSE:", len(reverse))
     with open("fundamentbolt.pkl", "wb") as file:

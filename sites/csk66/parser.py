@@ -123,30 +123,36 @@ def get_card_data(url):
         "stats": stats,
     }
 
+cards_counter = 0
+def main():
+    catalogs = {"root": {"title": "Каталог", "dealer": "ЦСК", "children": []}}
+    cards = {}
+    reverse = {}
+    catalog_urls = {}
 
-catalogs = {"root": {"title": "Каталог", "dealer": "ЦСК", "children": []}}
-cards = {}
-reverse = {}
-catalog_urls = {}
+    get_catalog_links(base_url, root, catalogs, reverse, catalog_urls, "root")
 
-get_catalog_links(base_url, root, catalogs, reverse, catalog_urls, "root")
+    leaf_catalog_ids = [
+        catalog_id
+        for catalog_id, catalog in catalogs.items()
+        if catalog_id != "root" and catalog["children"] == []
+    ]
+    print("LEAF CATALOGS:", leaf_catalog_ids)
 
-leaf_catalog_ids = [
-    catalog_id
-    for catalog_id, catalog in catalogs.items()
-    if catalog_id != "root" and catalog["children"] == []
-]
-print("LEAF CATALOGS:", leaf_catalog_ids)
+    for catalog_id in leaf_catalog_ids:
+        for card_url in get_catalog_cards(base_url, catalog_urls[catalog_id]):
+            card_id = "card:" + get_id(card_url)
+            card = get_card_data(card_url)
+            catalogs[catalog_id]["children"].append(card_id)
+            reverse[card_id] = catalog_id
+            cards[card_id] = card
+            cards_counter+=1
+            print("CARD ADDED:", card_id, "->", catalog_id,"COUNTER",cards_counter)
 
-for catalog_id in leaf_catalog_ids:
-    for card_url in get_catalog_cards(base_url, catalog_urls[catalog_id]):
-        card_id = "card:" + get_id(card_url)
-        card = get_card_data(card_url)
-        catalogs[catalog_id]["children"].append(card_id)
-        reverse[card_id] = catalog_id
-        cards[card_id] = card
-        print("CARD ADDED:", card_id, "->", catalog_id)
-
+            if cards_counter==100:
+                return catalogs,reverse,cards
+    return catalogs,reverse,cards
+catalogs, reverse, cards = main()
 print("CATALOGS:", len(catalogs))
 print("CARDS:", len(cards))
 print("REVERSE:", len(reverse))

@@ -121,6 +121,7 @@ def main():
     reverse = {}
     catalog_urls = {}
     cards = {}
+    cards_counter = 0
     try:
         catalogs, reverse, catalog_urls = get_catalog_links(base_url)
         leaf_ids = [
@@ -139,7 +140,8 @@ def main():
                 catalogs[catalog_id]["children"].append(card_id)
                 reverse[card_id] = catalog_id
                 cards[card_id] = card
-                print("CARD ADDED:", card_id, "->", catalog_id)
+                cards_counter+=1
+                print("CARD ADDED:", card_id, "->", catalog_id,"COUNTER",cards_counter)
     except requests.exceptions.Timeout as error:
         save_db(Path("spk.partial.pkl"), catalogs, cards, reverse)
         print("TIMEOUT, SAVED spk.partial.pkl:", error)

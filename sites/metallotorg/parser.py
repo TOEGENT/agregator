@@ -154,8 +154,7 @@ def get_card_id(url):
         path = path[len("info/metallobaza/"):]
     return "card:" + path.replace("/", ":")
 
-
-if __name__ == "__main__":
+def main():
     catalogs, reverse, catalog_urls = get_catalog_links()
     cards = {}
     leaf_ids = [
@@ -164,7 +163,7 @@ if __name__ == "__main__":
         if item_id != "root" and not item["children"]
     ]
     print("LEAF CATALOGS:", leaf_ids)
-
+    card_counter = 0
     for catalog_id in leaf_ids:
         for card_url in get_catalog_cards(catalog_urls[catalog_id]):
             card_id = get_card_id(card_url)
@@ -173,12 +172,19 @@ if __name__ == "__main__":
                 continue
             card = get_card_data(card_url)
             if card is None:
+                print(1)
                 continue
             catalogs[catalog_id]["children"].append(card_id)
             reverse[card_id] = catalog_id
             cards[card_id] = card
-            print("CARD ADDED:", card_id, "->", catalog_id)
+            card_counter+=1
+            print("CARD ADDED:", card_id, "->", catalog_id, "COUNTER", card_counter)
+            if card_counter==100:
+                return catalogs,reverse,cards
+    return catalogs,reverse,cards
+if __name__ == "__main__":
 
+    catalogs,reverse,cards = main()
     print("CATALOGS:", len(catalogs), "CARDS:", len(cards), "REVERSE:", len(reverse))
     with open("metallotorg.pkl", "wb") as file:
         pickle.dump({"catalogs": catalogs, "cards": cards, "reverse": reverse}, file)
