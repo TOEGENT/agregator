@@ -8,6 +8,37 @@ app = Flask(__name__)
 with open("dbs/combined.pkl", "rb") as file:
     db = pickle.load(file)
 
+def build_catalog_images():
+    cache = {}
+    visiting = set()
+
+    def find_image(catalog_id):
+        if catalog_id in cache:
+            return cache[catalog_id]
+        if catalog_id in visiting:
+            return None
+        visiting.add(catalog_id)
+        image = None
+        catalog = db["catalogs"].get(catalog_id, {})
+        for child_id in catalog.get("children", []):
+            if child_id in db["cards"]:
+                images = db["cards"][child_id].get("images", [])
+                image = next((item for item in images if item), None)
+            elif child_id in db["catalogs"]:
+                image = find_image(child_id)
+            if image:
+                break
+        visiting.remove(catalog_id)
+        cache[catalog_id] = image
+        return image
+
+    for catalog_id in db["catalogs"]:
+        find_image(catalog_id)
+    return cache
+
+
+CATALOG_IMAGES = build_catalog_images()
+
 
 def breadcrumbs(item_id):
     items = []
@@ -61,18 +92,22 @@ def catalog(catalog_id):
         if child_id in db["catalogs"]:
             title = db["catalogs"][child_id]["title"]
             href = url_for("catalog", catalog_id=child_id)
+            image = CATALOG_IMAGES.get(child_id)
         elif child_id in db["cards"]:
             title = db["cards"][child_id]["name"]
             href = url_for("product", card_id=child_id)
+            images = db["cards"][child_id].get("images", [])
+            image = next((item for item in images if item), None)
         else:
             continue
-        links.append({"title": title, "href": href})
+        links.append({"title": title, "href": href, "image": image})
     return render_template(
         "tree.html",
         current=current,
         links=links,
         breadcrumbs=breadcrumbs(catalog_id),
         is_root=catalog_id == "root",
+        hero_image=CATALOG_IMAGES.get("makita"),
     )
 
 
