@@ -1,8 +1,17 @@
 {% extends "base.html" %}
 {% block title %}{{ current.title }} — СнабГарант-НТ{% endblock %}
 {% block content %}
+{% if is_root %}
+<section class="hero">
+  <div class="hero-content"><span class="eyebrow">СнабГарант-НТ</span><h1>Комплексное поставки на строительные объекты</h1><p>Инструмент, крепёж, сварочное оборудование, вентиляция, кровля и металлопрокат в одном каталоге.</p><div class="hero-actions"><a class="button" href="#catalog">Перейти в каталог</a><a class="hero-contact" href="#contacts">Связаться с нами →</a></div></div>
+  {% if hero_image %}<img class="hero-image" src="{{ hero_image }}" alt="Профессиональный инструмент">{% endif %}
+</section>
+<form class="toolbar search-form" action="{{ url_for('search') }}"><input name="q" placeholder="Поиск по товарам и характеристикам"><button>Найти</button></form>
+<h2 id="catalog" class="section-heading">Основные направления</h2>
+{% else %}
 <nav class="back">{% for item in breadcrumbs %}{% if item.href %}<a href="{{ item.href }}">{{ item.title }}</a> → {% else %}{{ item.title }}{% endif %}{% endfor %}</nav>
-{% if is_root %}<form class="toolbar search-form" action="{{ url_for('search') }}"><input name="q" placeholder="Поиск"><button>Найти</button></form>{% endif %}
 <h1>{{ current.title }}</h1>
-<div class="catalogs">{% for item in links %}<a class="catalog-link" href="{{ item.href }}"><strong>{{ item.title }}</strong><span class="muted">Открыть →</span></a>{% endfor %}</div>
+{% endif %}
+<div class="catalogs">{% for item in links %}<a class="catalog-link" href="{{ item.href }}">{% if item.image %}<img class="catalog-preview" src="{{ item.image }}" loading="lazy" alt="{{ item.title }}">{% else %}<span class="catalog-preview-placeholder">Нет фотографии</span>{% endif %}<strong>{{ item.title }}</strong><span class="muted">Открыть →</span></a>{% endfor %}</div>
+{% if is_root %}<section class="trust"><span class="eyebrow">Работаем на результат</span><h2>Надёжное снабжение без лишней сложности</h2><div class="trust-grid"><div><strong>Широкий каталог</strong><p>Основные группы строительных материалов и профессионального инструмента.</p></div><div><strong>Подбор под задачу</strong><p>Поможем сориентироваться в ассортименте и найти подходящее решение.</p></div><div><strong>Прямой контакт</strong><p>Телефон, почта и адрес компании всегда доступны внизу страницы.</p></div></div><a class="button" href="#contacts">Обсудить поставку</a></section>{% endif %}
 {% endblock %}

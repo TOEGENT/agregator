@@ -4,5 +4,5 @@
 <a class="back" href="{{ url_for('index') }}">← Каталог</a>
 <form class="toolbar search-form" action="{{ url_for('search') }}"><input name="q" value="{{ query }}" placeholder="Поиск"><button>Найти</button></form>
 <h1>Результаты поиска</h1>
-<div class="product-grid">{% for item in matches %}<a class="product-card" href="{{ url_for('product', card_id=item.id) }}">{% if item.card.images %}<img class="product-preview" src="{{ item.card.images[0] }}" alt="{{ item.card.name }}">{% endif %}<strong>{{ item.card.name }}</strong></a>{% endfor %}</div>
+<div class="catalogs">{% for item in matches %}<a class="catalog-link" href="{{ url_for('product', card_id=item.id) }}">{% if item.card.images %}<img class="catalog-preview" src="{{ item.card.images[0] }}" loading="lazy" alt="{{ item.card.name }}">{% else %}<span class="catalog-preview-placeholder">Нет фотографии</span>{% endif %}<strong>{{ item.card.name }}</strong><span class="muted">Открыть →</span></a>{% endfor %}</div>
 {% endblock %}
