@@ -21,8 +21,8 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 PARTIAL_FILE = "td-svarka.partial.pkl"
 
 
-def save_partial_on_timeout(exc_type, exc_value, traceback):
-    if issubclass(exc_type, requests.exceptions.Timeout):
+def save_partial_on_error(exc_type, exc_value, traceback):
+    if issubclass(exc_type, BaseException):
         state = None
         current = traceback
         while current is not None:
@@ -37,11 +37,11 @@ def save_partial_on_timeout(exc_type, exc_value, traceback):
             with temporary.open("wb") as file:
                 pickle.dump({name: state[name] for name in names}, file)
             temporary.replace(output)
-            print("TIMEOUT, SAVED", PARTIAL_FILE)
+            print("ERROR, SAVED", PARTIAL_FILE)
     sys.__excepthook__(exc_type, exc_value, traceback)
 
 
-sys.excepthook = save_partial_on_timeout
+sys.excepthook = save_partial_on_error
 
 
 def get_catalog_links(url):

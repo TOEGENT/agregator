@@ -167,10 +167,10 @@ def main():
                     return catalogs,reverse,cards
         remove_empty_catalogs(catalogs, reverse)
         return catalogs,reverse,cards
-    except requests.exceptions.Timeout as error:
+    except BaseException as error:
         save_db(Path("spk.partial.pkl"), catalogs, cards, reverse)
-        print("TIMEOUT, SAVED spk.partial.pkl:", error)
-        return False
+        print("ERROR, SAVED spk.partial.pkl:", error)
+        raise
 
 catalogs,reverse,cards = main()
 print("CATALOGS:", len(catalogs), "CARDS:", len(cards), "REVERSE:", len(reverse))
