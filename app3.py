@@ -5,7 +5,7 @@ app = Flask(__name__)
 
 
 
-with open("dbs/combined.pkl","rb") as file:
+with open("combined2.pkl","rb") as file:
     db = pickle.load(file)
 
 
@@ -56,7 +56,8 @@ def make_page(ids:list):
             title = db["catalogs"][id]["title"]
             result+=get_href(id,title)
         else:
-            result+=get_card(id)
+            name = db["cards"][id]["name"]
+            result+=get_href(id,name)
     return result
 
 def include(part:str,whole:str):
