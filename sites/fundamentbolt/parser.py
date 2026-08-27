@@ -149,10 +149,10 @@ def remove_empty_catalogs(catalogs, reverse):
             changed = True
 
 
-def main():
+def main(cards_dict:dict):
     cards_counter = 0
     catalogs, reverse, catalog_urls = get_catalog_links()
-    cards = {}
+    cards = cards_dict
     leaf_ids = [
         item_id
         for item_id, item in catalogs.items()
@@ -178,7 +178,14 @@ def main():
     remove_empty_catalogs(catalogs, reverse)
     return catalogs,reverse,cards
 if __name__ == "__main__":
-    catalogs,reverse,cards = main()
+
+    try:
+        with open("dbs/fundamentbolt.pkl","rb") as file:
+            db = pickle.load(file)
+    except FileNotFoundError:
+        with open("dbs/fundamentbolt.partial.pkl","rb") as file:
+            db = pickle.load(file)
+    catalogs,reverse,cards = main(db["cards"])
 
     print("CATALOGS:", len(catalogs), "CARDS:", len(cards), "REVERSE:", len(reverse))
     with open("fundamentbolt.pkl", "wb") as file:

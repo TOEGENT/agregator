@@ -162,9 +162,9 @@ def remove_empty_catalogs(catalogs, reverse):
             changed = True
 
 
-def main():
+def main(card_dict:dict):
     catalogs, reverse, catalog_urls = get_catalog_links("https://makita-russia.shop")
-    cards = {}
+    cards = card_dict
     leaf_catalog_ids = [
         catalog_id
         for catalog_id, catalog in catalogs.items()
@@ -190,7 +190,13 @@ def main():
     remove_empty_catalogs(catalogs, reverse)
     return catalogs,reverse,cards
 
-catalogs,reverse,cards = main()
+try:
+    with open("dbs/makita.pkl","rb") as file:
+        db = pickle.load(file)
+except FileNotFoundError:
+    with open("dbs/makita.partial.pkl","rb") as file:
+        db = pickle.load(file)
+catalogs,reverse,cards = main(db["cards"])
 print("CATALOGS:", len(catalogs))
 print("CARDS:", len(cards))
 print("REVERSE:", len(reverse))

@@ -151,9 +151,9 @@ def get_card_data(url):
         "stats": stats,
     }
 
-def main():
+def main(cards_dict:dict):
     catalogs, reverse, catalog_urls = get_catalog_links(base_url)
-    cards = {}
+    cards = cards_dict
     cards_counter = 0
 
     leaf_catalog_ids = [
@@ -181,7 +181,13 @@ def main():
 
 
 if __name__ == "__main__":
-    catalogs, reverse, cards = main()
+    try:
+        with open("dbs/csk66.pkl","rb") as file:
+            db = pickle.load(file)
+    except FileNotFoundError:
+        with open("dbs/csk66.partial.pkl","rb") as file:
+            db = pickle.load(file)
+    catalogs, reverse, cards = main(db["cards"])
     print("CATALOGS:", len(catalogs))
     print("CARDS:", len(cards))
     print("REVERSE:", len(reverse))

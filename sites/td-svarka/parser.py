@@ -148,10 +148,10 @@ def remove_empty_catalogs(catalogs, reverse):
             changed = True
 
 
-def main():
+def main(cards_dict:dict):
     cards_counter = 0
     catalogs, reverse, catalog_urls = get_catalog_links(base_url)
-    cards = {}
+    cards = cards_dict
     leaf_ids = [item_id for item_id, item in catalogs.items() if item_id != "root" and not item["children"]]
     print("LEAF CATALOGS:", leaf_ids)
     for catalog_id in leaf_ids:
@@ -171,8 +171,15 @@ def main():
                 return catalogs,reverse,cards
     remove_empty_catalogs(catalogs, reverse)
     return catalogs,reverse,cards
-    
-catalogs,reverse,cards = main()
+
+try:
+    with open("dbs/td-svarka.pkl","rb") as file:
+        db = pickle.load(file)
+except FileNotFoundError:
+    with open("dbs/td-svarka.partial.pkl","rb") as file:
+        db = pickle.load(file)
+
+catalogs,reverse,cards = main(db["cards"])
 print("CATALOGS:", len(catalogs), "CARDS:", len(cards), "REVERSE:", len(reverse))
 with open("td-svarka.pkl", "wb") as file:
     pickle.dump({"catalogs": catalogs, "cards": cards, "reverse": reverse}, file)

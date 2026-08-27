@@ -136,11 +136,11 @@ def remove_empty_catalogs(catalogs, reverse):
             changed = True
 
 
-def main():
+def main(cards_dict:dict):
     catalogs = {"root": {"title": "Каталог", "dealer": "СПК", "children": []}}
     reverse = {}
     catalog_urls = {}
-    cards = {}
+    cards = cards_dict
     cards_counter = 0
     try:
         catalogs, reverse, catalog_urls = get_catalog_links(base_url)
@@ -172,7 +172,14 @@ def main():
         print("ERROR, SAVED spk.partial.pkl:", error)
         raise
 
-catalogs,reverse,cards = main()
+
+try:
+    with open("dbs/spk.pkl","rb") as file:
+        db = pickle.load(file)
+except FileNotFoundError:
+    with open("dbs/spk.partial.pkl","rb") as file:
+        db = pickle.load(file)
+catalogs,reverse,cards = main(db["cards"])
 print("CATALOGS:", len(catalogs), "CARDS:", len(cards), "REVERSE:", len(reverse))
 save_db(Path("spk.pkl"), catalogs, cards, reverse)
 print("SAVED spk.pkl")
