@@ -22,9 +22,9 @@ def merge_catalogs(dicts:list):
                         if keys_db[i] == "root":
                               dealer = values_db[i]["dealer"]
                               result["root"]["children"].append(dealer)
-                              result[dealer] = values_db[i]  # 1 : ['a', 'b', 'c']
+                              result[dealer] = values_db[i] 
                               continue
-                        result[keys_db[i]] = values_db[i]  # 1 : ['a', 'b', 'c']
+                        result[keys_db[i]] = values_db[i]  
                   except:
                         pass  
       return result
