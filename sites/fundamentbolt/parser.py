@@ -88,10 +88,10 @@ def get_catalog_links(url=base_url):
     return catalogs, reverse, catalog_urls
 
 
-def get_catalog_cards(url):
+def get_catalog_cards(url, page):
     """Parse cards directly from every page of a leaf catalog."""
     cards = {}
-    page = 1
+    page = max(page, 1)
     while True:
         print("GET CATALOG PAGE:", url, page)
         response = requests.get(url, params={"page": page}, headers=headers)
@@ -149,7 +149,7 @@ def remove_empty_catalogs(catalogs, reverse):
             changed = True
 
 
-def main(cards_dict:dict):
+def main(cards_dict:dict, old_catalogs:dict):
     cards_counter = 0
     catalogs, reverse, catalog_urls = get_catalog_links()
     cards = cards_dict
@@ -161,7 +161,12 @@ def main(cards_dict:dict):
     print("LEAF CATALOGS:", leaf_ids)
 
     for catalog_id in leaf_ids:
-        catalog_cards = get_catalog_cards(catalog_urls[catalog_id])
+        if catalog_id in old_catalogs:
+            old_progress_page = old_catalogs[catalog_id].get("pagination_progress", 0)
+        else:
+            old_progress_page = 0
+        catalogs[catalog_id]["pagination_progress"] = old_progress_page
+        catalog_cards = get_catalog_cards(catalog_urls[catalog_id], old_progress_page)
         for card_id, card in catalog_cards.items():
             if card_id in cards:
                 print("DUPLICATE CARD, SKIP:", card_id)
@@ -185,7 +190,7 @@ if __name__ == "__main__":
     except FileNotFoundError:
         with open("dbs/fundamentbolt.partial.pkl","rb") as file:
             db = pickle.load(file)
-    catalogs,reverse,cards = main(db["cards"])
+    catalogs,reverse,cards = main(db["cards"], db["catalogs"])
 
     print("CATALOGS:", len(catalogs), "CARDS:", len(cards), "REVERSE:", len(reverse))
     with open("fundamentbolt.pkl", "wb") as file:

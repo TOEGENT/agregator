@@ -89,9 +89,9 @@ def get_catalog_links(url):
     return catalogs, reverse, catalog_urls
 
 
-def get_catalog_cards(url):
+def get_catalog_cards(url, page):
     card_urls = []
-    page = 1
+    page = max(page, 1)
     while True:
         print("GET CATALOG PAGE:", url, page)
         response = requests.get(
@@ -162,7 +162,7 @@ def remove_empty_catalogs(catalogs, reverse):
             changed = True
 
 
-def main(card_dict:dict):
+def main(card_dict:dict, old_catalogs:dict):
     catalogs, reverse, catalog_urls = get_catalog_links("https://makita-russia.shop")
     cards = card_dict
     leaf_catalog_ids = [
@@ -173,7 +173,12 @@ def main(card_dict:dict):
     print("LEAF CATALOGS:", leaf_catalog_ids)
     cards_counter = 0
     for catalog_id in leaf_catalog_ids:
-        for card_url in get_catalog_cards(catalog_urls[catalog_id]):
+        if catalog_id in old_catalogs:
+            old_progress_page = old_catalogs[catalog_id].get("pagination_progress", 0)
+        else:
+            old_progress_page = 0
+        catalogs[catalog_id]["pagination_progress"] = old_progress_page
+        for card_url in get_catalog_cards(catalog_urls[catalog_id], old_progress_page):
             card_id = get_card_id(card_url)
             if card_id in cards:
                 print("DUPLICATE CARD, SKIP:", card_id)
@@ -196,7 +201,7 @@ try:
 except FileNotFoundError:
     with open("dbs/makita.partial.pkl","rb") as file:
         db = pickle.load(file)
-catalogs,reverse,cards = main(db["cards"])
+catalogs,reverse,cards = main(db["cards"], db["catalogs"])
 print("CATALOGS:", len(catalogs))
 print("CARDS:", len(cards))
 print("REVERSE:", len(reverse))

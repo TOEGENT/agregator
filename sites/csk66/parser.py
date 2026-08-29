@@ -100,9 +100,11 @@ def remove_empty_catalogs(catalogs, reverse):
             changed = True
 
 
-def get_catalog_cards(base_url, url):
+
+
+def get_catalog_cards(base_url, url,page):
     card_links = []
-    page = 1
+    page = max(page, 1)
     while True:
         print("GET CARDS:", url, page)
         response = requests.get(url, params={"PAGEN_1": page})
@@ -151,20 +153,26 @@ def get_card_data(url):
         "stats": stats,
     }
 
-def main(cards_dict:dict):
+def main(cards_dict:dict,old_catalogs:dict):
     catalogs, reverse, catalog_urls = get_catalog_links(base_url)
     cards = cards_dict
     cards_counter = 0
-
+    old_catalogs = old_catalogs
     leaf_catalog_ids = [
         catalog_id
         for catalog_id, catalog in catalogs.items()
         if catalog_id != "root" and catalog["children"] == []
     ]
+
     print("LEAF CATALOGS:", leaf_catalog_ids)
 
     for catalog_id in leaf_catalog_ids:
-        for card_url in get_catalog_cards(base_url, catalog_urls[catalog_id]):
+        if catalog_id in old_catalogs:
+            old_progress_page = old_catalogs[catalog_id].get("pagination_progress",0)
+        else:
+            old_progress_page = 0
+        catalogs[catalog_id]["pagination_progress"] = old_progress_page
+        for card_url in get_catalog_cards(base_url, catalog_urls[catalog_id],old_progress_page):
             card_id = "card:" + get_id(card_url)
             card = get_card_data(card_url)
             catalogs[catalog_id]["children"].append(card_id)
@@ -187,7 +195,7 @@ if __name__ == "__main__":
     except FileNotFoundError:
         with open("dbs/csk66.partial.pkl","rb") as file:
             db = pickle.load(file)
-    catalogs, reverse, cards = main(db["cards"])
+    catalogs, reverse, cards = main(db["cards"],db["catalogs"])
     print("CATALOGS:", len(catalogs))
     print("CARDS:", len(cards))
     print("REVERSE:", len(reverse))
