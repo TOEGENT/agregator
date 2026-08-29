@@ -222,7 +222,7 @@ if __name__ == "__main__":
         with open("dbs/metallotorg.pkl","rb") as file:
             db = pickle.load(file)
     except FileNotFoundError:
-        with open("metallotorg.partial.pkl","rb") as file:
+        with open("partial_dbs/metallotorg.partial.pkl","rb") as file:
             db = pickle.load(file)
     catalogs,reverse,cards = main(db["cards"], db["catalogs"])
     print("CATALOGS:", len(catalogs), "CARDS:", len(cards), "REVERSE:", len(reverse))

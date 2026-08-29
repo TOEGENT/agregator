@@ -86,9 +86,9 @@ def get_catalog_links(url):
     return catalogs, reverse, catalog_urls
 
 
-def get_catalog_cards(url):
-    card_urls = []
-    page = 1
+def get_catalog_cards(catalog_urls, catalogs, catalog_id, page, cards, reverse, card_counter):
+    url = catalog_urls[catalog_id]
+    page = max(page, 1)
     while True:
         print("GET CATALOG PAGE:", url, page)
         response = requests.get(url + f"?page={page}", headers=headers, verify=False)
@@ -97,14 +97,32 @@ def get_catalog_cards(url):
         page_cards = []
         for item in soup.select("a.b-tovar-item-name[href]"):
             card_url = urljoin(url, item["href"])
-            if card_url not in card_urls and card_url not in page_cards:
+            if card_url not in page_cards:
                 page_cards.append(card_url)
         if not page_cards:
             break
-        card_urls.extend(page_cards)
         print("CARDS FOUND:", len(card_urls))
+        for card_url in page_cards:
+            card_id = get_card_id(card_url)
+            if card_id in cards:
+                print("DUPLICATE CARD, SKIP:", card_id)
+                continue
+            card = get_card_data(card_url)
+            if card is None:
+                print("CARD DATA MISSING, SKIP:", card_id)
+                continue
+            catalogs[catalog_id]["children"].append(card_id)
+            reverse[card_id] = catalog_id
+            cards[card_id] = card
+            card_counter += 1
+            print("CARD ADDED:", card_id, "->", catalog_id, "COUNTER", card_counter)
+            if card_counter == 999999:
+                return card_counter, True
         page += 1
-    return card_urls
+        catalogs[catalog_id]["pagination_progress"] = page
+
+    return card_counter, False
+
 
 
 def get_card_data(url):
@@ -148,27 +166,30 @@ def remove_empty_catalogs(catalogs, reverse):
             changed = True
 
 
-def main(cards_dict:dict):
+def main(cards_dict:dict, old_catalogs:dict):
     cards_counter = 0
     catalogs, reverse, catalog_urls = get_catalog_links(base_url)
     cards = cards_dict
     leaf_ids = [item_id for item_id, item in catalogs.items() if item_id != "root" and not item["children"]]
     print("LEAF CATALOGS:", leaf_ids)
     for catalog_id in leaf_ids:
-        for card_url in get_catalog_cards(catalog_urls[catalog_id]):
-            card_id = get_card_id(card_url)
-            if card_id in cards:
-                print("DUPLICATE CARD, SKIP:", card_id)
-                continue
-            card = get_card_data(card_url)
-            catalogs[catalog_id]["children"].append(card_id)
-            reverse[card_id] = catalog_id
-            cards[card_id] = card
-            cards_counter+=1
-            print("CARD ADDED:", card_id, "->", catalog_id,"COUNTER",cards_counter)
-            if cards_counter==999999:
-                remove_empty_catalogs(catalogs, reverse)
-                return catalogs,reverse,cards
+        if catalog_id in old_catalogs:
+            old_progress_page = old_catalogs[catalog_id].get("pagination_progress", 0)
+        else:
+            old_progress_page = 0
+        catalogs[catalog_id]["pagination_progress"] = old_progress_page
+        card_counter, limit_reached = get_catalog_cards(
+                    catalog_urls,
+                    catalogs,
+                    catalog_id,
+                    old_progress_page,
+                    cards,
+                    reverse,
+                    card_counter,
+                )
+        if limit_reached:
+            remove_empty_catalogs(catalogs, reverse)
+            return catalogs,reverse,cards
     remove_empty_catalogs(catalogs, reverse)
     return catalogs,reverse,cards
 
@@ -176,10 +197,10 @@ try:
     with open("dbs/td-svarka.pkl","rb") as file:
         db = pickle.load(file)
 except FileNotFoundError:
-    with open("dbs/td-svarka.partial.pkl","rb") as file:
+    with open("partial_dbs/td-svarka.partial.pkl","rb") as file:
         db = pickle.load(file)
 
-catalogs,reverse,cards = main(db["cards"])
+catalogs,reverse,cards = main(db["cards"], db["catalogs"])
 print("CATALOGS:", len(catalogs), "CARDS:", len(cards), "REVERSE:", len(reverse))
 with open("td-svarka.pkl", "wb") as file:
     pickle.dump({"catalogs": catalogs, "cards": cards, "reverse": reverse}, file)

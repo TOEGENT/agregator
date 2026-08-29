@@ -188,7 +188,7 @@ try:
     with open("dbs/provent.pkl","rb") as file:
         db = pickle.load(file)
 except FileNotFoundError:
-    with open("provent.partial.pkl","rb") as file:
+    with open("partial_dbs/provent.partial.pkl","rb") as file:
         db = pickle.load(file)
 
 catalogs,reverse,cards = main(db["cards"], db["catalogs"])

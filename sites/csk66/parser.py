@@ -99,11 +99,13 @@ def remove_empty_catalogs(catalogs, reverse):
             del catalogs[catalog_id]
             changed = True
 
+def get_card_id(url):
+    return "card:" + urlparse(url).path.rstrip("/").split("/")[-1]
 
 
 
-def get_catalog_cards(base_url, url,page):
-    card_links = []
+def get_catalog_cards(catalog_urls, catalogs, catalog_id, page, cards, reverse, card_counter):
+    url = catalog_urls[catalog_id]
     page = max(page, 1)
     while True:
         print("GET CARDS:", url, page)
@@ -113,17 +115,34 @@ def get_catalog_cards(base_url, url,page):
         if page > 1 and returned_page == ["1"]:
             break
         soup = BeautifulSoup(response.text, "lxml")
-        page_links = []
+        page_cards = []
         for item in soup.select("a.product__title"):
             card_link = urljoin(base_url, item["href"])
-            if card_link not in card_links and card_link not in page_links:
-                page_links.append(card_link)
-        if not page_links:
+            if card_link not in page_cards :
+                page_cards.append(card_link)
+        if not page_cards:
             break
-        card_links.extend(page_links)
-        print("CARDS FOUND:", len(card_links))
+        print("CARDS FOUND:", len(page_cards))
+        for card_url in page_cards:
+            card_id = get_card_id(card_url)
+            if card_id in cards:
+                print("DUPLICATE CARD, SKIP:", card_id)
+                continue
+            card = get_card_data(card_url)
+            if card is None:
+                print("CARD DATA MISSING, SKIP:", card_id)
+                continue
+            catalogs[catalog_id]["children"].append(card_id)
+            reverse[card_id] = catalog_id
+            cards[card_id] = card
+            card_counter += 1
+            print("CARD ADDED:", card_id, "->", catalog_id, "COUNTER", card_counter)
+            if card_counter == 999999:
+                return card_counter, True
         page += 1
-    return card_links
+        catalogs[catalog_id]["pagination_progress"] = page
+
+    return card_counter, False
 
 
 def get_card_data(url):
@@ -172,18 +191,18 @@ def main(cards_dict:dict,old_catalogs:dict):
         else:
             old_progress_page = 0
         catalogs[catalog_id]["pagination_progress"] = old_progress_page
-        for card_url in get_catalog_cards(base_url, catalog_urls[catalog_id],old_progress_page):
-            card_id = "card:" + get_id(card_url)
-            card = get_card_data(card_url)
-            catalogs[catalog_id]["children"].append(card_id)
-            reverse[card_id] = catalog_id
-            cards[card_id] = card
-            cards_counter+=1
-            print("CARD ADDED:", card_id, "->", catalog_id,"COUNTER",cards_counter)
-
-            if cards_counter==999999:
-                remove_empty_catalogs(catalogs, reverse)
-                return catalogs,reverse,cards
+        card_counter, limit_reached = get_catalog_cards(
+            catalog_urls,
+            catalogs,
+            catalog_id,
+            old_progress_page,
+            cards,
+            reverse,
+            card_counter,
+        )
+        if limit_reached:
+            remove_empty_catalogs(catalogs, reverse)
+            return catalogs,reverse,cards
     remove_empty_catalogs(catalogs, reverse)
     return catalogs,reverse,cards
 
@@ -193,7 +212,7 @@ if __name__ == "__main__":
         with open("dbs/csk66.pkl","rb") as file:
             db = pickle.load(file)
     except FileNotFoundError:
-        with open("dbs/csk66.partial.pkl","rb") as file:
+        with open("partial_dbs/csk66.partial.pkl","rb") as file:
             db = pickle.load(file)
     catalogs, reverse, cards = main(db["cards"],db["catalogs"])
     print("CATALOGS:", len(catalogs))

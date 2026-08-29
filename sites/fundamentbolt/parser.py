@@ -88,10 +88,10 @@ def get_catalog_links(url=base_url):
     return catalogs, reverse, catalog_urls
 
 
-def get_catalog_cards(url, page):
-    """Parse cards directly from every page of a leaf catalog."""
-    cards = {}
+def get_catalog_cards(catalog_urls, catalogs, catalog_id, page, cards, reverse, card_counter):
     page = max(page, 1)
+    url = catalog_urls[catalog_id]
+
     while True:
         print("GET CATALOG PAGE:", url, page)
         response = requests.get(url, params={"page": page}, headers=headers)
@@ -106,6 +106,9 @@ def get_catalog_cards(url, page):
                 continue
 
             card_id = "card:" + id_tag["value"]
+            if card_id in cards:
+                print("DUPLICATE CARD, SKIP:", card_id)
+                continue
             image_tag = item.select_one(".pro__thumb img")
             images = []
             if image_tag is not None:
@@ -125,15 +128,21 @@ def get_catalog_cards(url, page):
                 "description": "",
                 "stats": stats,
             }
-
+            catalogs[catalog_id]["children"].append(card_id)
+            reverse[card_id] = catalog_id
+            cards[card_id] = page_cards[card_id]
+            card_counter += 1
+            if card_counter == 9999999:
+                return card_counter, True
         new_cards = {card_id: card for card_id, card in page_cards.items() if card_id not in cards}
         if not new_cards:
             break
         cards.update(new_cards)
         print("CARDS FOUND:", len(cards))
         page += 1
+        catalogs[catalog_id]["pagination_progress"] = page
 
-    return cards
+    return card_counter, True
 
 
 def remove_empty_catalogs(catalogs, reverse):
@@ -188,7 +197,7 @@ if __name__ == "__main__":
         with open("dbs/fundamentbolt.pkl","rb") as file:
             db = pickle.load(file)
     except FileNotFoundError:
-        with open("dbs/fundamentbolt.partial.pkl","rb") as file:
+        with open("partial_dbs/fundamentbolt.partial.pkl","rb") as file:
             db = pickle.load(file)
     catalogs,reverse,cards = main(db["cards"], db["catalogs"])
 
