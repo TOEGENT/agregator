@@ -51,6 +51,14 @@ def get_children(root,get_name=True,get_id=False):
 def make_page(ids:list):
     result = ""
     result+=make_search_window()
+
+    #допустим юзер докликал до списка hrefs карточек и кликнул на href
+    if len(ids)==1 and "card" in ids[0]:
+        result+=get_card(ids[0])
+        print(db["cards"][ids[0]].keys())
+        result+=make_page(db["cards"][ids[0]]["parents"])
+    # конец допущения
+    
     for id in ids:
         if "card" not in id:
             title = db["catalogs"][id]["title"]
