@@ -188,9 +188,8 @@ def main(cards_dict:dict, old_catalogs:dict):
                 return catalogs,reverse,cards
         remove_empty_catalogs(catalogs, reverse)
         return catalogs,reverse,cards
-    except BaseException as error:
+    except:
         save_db(Path("partial_dbs/spk.partial.pkl"), catalogs, cards, reverse)
-        print("ERROR, SAVED spk.partial.pkl:", error)
         raise
 
 
