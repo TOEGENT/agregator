@@ -1,5 +1,6 @@
 import pickle
 import os
+from make_reverse import make_parents
 dbs = []
 for filename in os.listdir("dbs"):
     with open(f"dbs/{filename}",'rb') as file:
@@ -40,4 +41,6 @@ result_catalogs = merge_catalogs([db["catalogs"] for db in dbs])
 result_cards = merge_cards(db["cards"] for db in dbs)
 
 with open("combined2.pkl","wb") as file:
-      pickle.dump({"catalogs":result_catalogs,"cards":result_cards},file)
+      result_db = {"catalogs":result_catalogs,"cards":result_cards}
+      make_parents(["root"],result_db)
+      pickle.dump(result_db,file)
