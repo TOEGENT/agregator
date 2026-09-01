@@ -13,19 +13,24 @@ db = {
                 "fundamentbolt", "csk66", "td-svarka",
                 "provent", "zavkrov", "metallotorg",
             ],
+            "parents":[]
         },
         "provent": {
             "title": "Вентиляция",
             "dealer": "Provent",
             "children": ["provent:5428"],
+            "parents":["root"]
         },
+    
         "provent:5428": {
             "title": "Вентиляторы",
             "children": ["provent:5440"],
+            "parents": ["root","provent"]
         },
         "provent:5440": {
             "title": "Канальные вентиляторы",
             "children": ["provent:card:12345"],
+            "parents": ["root","provent","provent:5428"]
         },
     },
     "cards": {
@@ -34,6 +39,7 @@ db = {
             "images": ["image.webp"],
             "description": "Описание товара",
             "stats": {"Производительность": "500 м³/ч"},
+            "parents": ["root","provent","provent:5428","provent:5440"]
         },
     },
     "reverse": {
