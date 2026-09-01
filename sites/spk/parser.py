@@ -4,12 +4,35 @@ from urllib.parse import urljoin, urlparse
 
 import requests
 from bs4 import BeautifulSoup
-
+import sys
 
 base_url = "https://spk.ru"
 headers = {"User-Agent": "Mozilla/5.0"}
 timeout = 30
 
+PARTIAL_FILE = "spk.partial.pkl"
+
+
+def save_partial_on_error(exc_type, exc_value, traceback):
+    if issubclass(exc_type, BaseException):
+        state = None
+        current = traceback
+        while current is not None:
+            local = current.tb_frame.f_locals
+            names = ("catalogs", "cards", "reverse")
+            if all(isinstance(local.get(name), dict) for name in names):
+                state = local
+            current = current.tb_next
+        if state is not None:
+            output = Path(PARTIAL_FILE)
+            temporary = output.with_suffix(output.suffix + ".tmp")
+            with temporary.open("wb") as file:
+                pickle.dump({name: state[name] for name in names}, file)
+            temporary.replace(output)
+            print("ERROR, SAVED", PARTIAL_FILE)
+    sys.__excepthook__(exc_type, exc_value, traceback)
+
+sys.excepthook = save_partial_on_error
 
 # Всё дерево находится в меню главной страницы и имеет три уровня:
 # main-item -> first-children -> second-children.
