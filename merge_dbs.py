@@ -21,8 +21,10 @@ def merge_catalogs(dicts:list):
                   try:
                         if keys_db[i] == "root":
                               dealer = values_db[i]["dealer"]
+                              if values_db[i]["title"] == "Каталог":
+                                    values_db[i]["title"] = values_db[i]["dealer"]
                               result["root"]["children"].append(dealer)
-                              result[dealer] = values_db[i] 
+                              result[dealer] = values_db[i]
                               continue
                         result[keys_db[i]] = values_db[i]  
                   except:
