@@ -175,7 +175,7 @@ def get_card_data(url):
 def main(cards_dict:dict,old_catalogs:dict):
     catalogs, reverse, catalog_urls = get_catalog_links(base_url)
     cards = cards_dict
-    cards_counter = 0
+    card_counter = 0
     old_catalogs = old_catalogs
     leaf_catalog_ids = [
         catalog_id
