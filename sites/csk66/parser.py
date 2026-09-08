@@ -160,14 +160,14 @@ def get_card_data(url):
 
     description_tag = soup.select_one("div.p-product__description")
     description = description_tag.text.strip() if description_tag else ""
-    images = [
-        urljoin(base_url, item["data-src"].replace("150_150", "600_293"))
-        for item in soup.select("img.p-product__gallery-thumbs-image")
-    ]
+    
+    main_image = soup.select_one("img.p-product__gallery-image")
+    image_url = urljoin(base_url, main_image["data-src"]) if main_image and main_image.get("data-src") else ""
+    
     print("CARD DATA:", name)
     return {
         "name": name,
-        "images": images,
+        "images": [image_url] if image_url else [],
         "description": description,
         "stats": stats,
     }
