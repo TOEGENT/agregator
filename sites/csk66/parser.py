@@ -126,8 +126,8 @@ def get_catalog_cards(catalog_urls, catalogs, catalog_id, page, cards, reverse, 
         for card_url in page_cards:
             card_id = get_card_id(card_url)
             if card_id in cards:
-                print("DUPLICATE CARD, SKIP:", card_id)
-                continue
+                print("DUPLICATE CARD, NOT SKIP DUE NEW_IMAGE:", card_id)
+                #continue
             card = get_card_data(card_url)
             if card is None:
                 print("CARD DATA MISSING, SKIP:", card_id)
@@ -163,11 +163,11 @@ def get_card_data(url):
     
     main_image = soup.select_one("img.p-product__gallery-image")
     image_url = urljoin(base_url, main_image["data-src"]) if main_image and main_image.get("data-src") else ""
-    
+    print(image_url)
     print("CARD DATA:", name)
     return {
         "name": name,
-        "images": [image_url] if image_url else [],
+        "images": [image_url],
         "description": description,
         "stats": stats,
     }
@@ -212,8 +212,11 @@ if __name__ == "__main__":
         with open("dbs/csk66.pkl","rb") as file:
             db = pickle.load(file)
     except FileNotFoundError:
-        with open("partial_dbs/csk66.partial.pkl","rb") as file:
-            db = pickle.load(file)
+        try:
+            with open("partial_dbs/csk66.partial.pkl","rb") as file:
+                db = pickle.load(file)
+        except:
+            db = {"cards":{},"catalogs":{}}
     catalogs, reverse, cards = main(db["cards"],db["catalogs"])
     print("CATALOGS:", len(catalogs))
     print("CARDS:", len(cards))
