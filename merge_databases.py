@@ -6,7 +6,7 @@ ROOT = Path(__file__).parent
 DB_DIR = ROOT / "dbs"
 SOURCES = {
     "fundamentbolt": ("Фундаментные болты", "fundamentbolt.pkl"),
-    "csk66": ("Метизы, абразивы, такелаж", "csk66.partial.pkl"),
+    "csk66": ("Метизы, абразивы, такелаж", "csk66.pkl"),
     "td-svarka": ("Сварка", "td-svarka.pkl"),
     "provent": ("Вентиляция", "provent.pkl"),
     "zavkrov": ("Кровля", "zavkrov.pkl"),
