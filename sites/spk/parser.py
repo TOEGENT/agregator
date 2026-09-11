@@ -212,7 +212,7 @@ def main(cards_dict:dict, old_catalogs:dict):
         remove_empty_catalogs(catalogs, reverse)
         return catalogs,reverse,cards
     except:
-        save_db(Path("partial_dbs/spk.partial.pkl"), catalogs, cards, reverse)
+        save_db(Path("spk.partial.pkl"), catalogs, cards, reverse)
         raise
 
 
@@ -220,8 +220,11 @@ try:
     with open("dbs/spk.pkl","rb") as file:
         db = pickle.load(file)
 except FileNotFoundError:
-    with open("partial_dbs/spk.partial.pkl","rb") as file:
-        db = pickle.load(file)
+    try:
+        with open("spk.partial.pkl","rb") as file:
+            db = pickle.load(file)
+    except FileNotFoundError:
+        db = {"cards":{},"catalogs":{}}
 catalogs,reverse,cards = main(db["cards"], db["catalogs"])
 print("CATALOGS:", len(catalogs), "CARDS:", len(cards), "REVERSE:", len(reverse))
 save_db(Path("spk.pkl"), catalogs, cards, reverse)

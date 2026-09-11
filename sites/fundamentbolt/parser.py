@@ -197,7 +197,7 @@ if __name__ == "__main__":
         with open("dbs/fundamentbolt.pkl","rb") as file:
             db = pickle.load(file)
     except FileNotFoundError:
-        with open("partial_dbs/fundamentbolt.partial.pkl","rb") as file:
+        with open("undamentbolt.partial.pkl","rb") as file:
             db = pickle.load(file)
     catalogs,reverse,cards = main(db["cards"], db["catalogs"])
 

@@ -221,7 +221,7 @@ try:
     with open("dbs/makita.pkl","rb") as file:
         db = pickle.load(file)
 except FileNotFoundError:
-    with open("partial_dbs/makita.partial.pkl","rb") as file:
+    with open("makita.partial.pkl","rb") as file:
         db = pickle.load(file)
 catalogs,reverse,cards = main(db["cards"], db["catalogs"])
 print("CATALOGS:", len(catalogs))

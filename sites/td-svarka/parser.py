@@ -197,7 +197,7 @@ try:
     with open("dbs/td-svarka.pkl","rb") as file:
         db = pickle.load(file)
 except FileNotFoundError:
-    with open("partial_dbs/td-svarka.partial.pkl","rb") as file:
+    with open("td-svarka.partial.pkl","rb") as file:
         db = pickle.load(file)
 
 catalogs,reverse,cards = main(db["cards"], db["catalogs"])
