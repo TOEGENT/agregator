@@ -103,7 +103,6 @@ def get_card_id(url):
     return "card:" + urlparse(url).path.rstrip("/").split("/")[-1]
 
 
-
 def get_catalog_cards(catalog_urls, catalogs, catalog_id, page, cards, reverse, card_counter):
     url = catalog_urls[catalog_id]
     page = max(page, 1)
@@ -111,14 +110,27 @@ def get_catalog_cards(catalog_urls, catalogs, catalog_id, page, cards, reverse, 
         print("GET CARDS:", url, page)
         response = requests.get(url, params={"PAGEN_1": page})
         response.raise_for_status()
-        returned_page = parse_qs(urlparse(response.url).query).get("PAGEN_1")
-        if page > 1 and returned_page == ["1"]:
-            break
+
         soup = BeautifulSoup(response.text, "lxml")
+
+        active_link = soup.select_one("a.pagination__link.is-active")
+
+        if active_link:
+            current_page_str = active_link.get("data-num") or active_link.get_text(strip=True)
+            try:
+                current_page_num = int(current_page_str)
+            except ValueError:
+                current_page_num = page
+        else:
+            current_page_num = 1
+
+        if page > 1 and current_page_num < page:
+            break
+
         page_cards = []
         for item in soup.select("a.product__title"):
             card_link = urljoin(base_url, item["href"])
-            if card_link not in page_cards :
+            if card_link not in page_cards:
                 page_cards.append(card_link)
         if not page_cards:
             break
@@ -126,8 +138,8 @@ def get_catalog_cards(catalog_urls, catalogs, catalog_id, page, cards, reverse, 
         for card_url in page_cards:
             card_id = get_card_id(card_url)
             if card_id in cards:
-                print("DUPLICATE CARD, NOT SKIP DUE NEW_IMAGE:", card_id)
-                #continue
+                print("DUPLICATE CARD, SKIP:", card_id)
+                continue
             card = get_card_data(card_url)
             if card is None:
                 print("CARD DATA MISSING, SKIP:", card_id)
@@ -143,7 +155,6 @@ def get_catalog_cards(catalog_urls, catalogs, catalog_id, page, cards, reverse, 
         catalogs[catalog_id]["pagination_progress"] = page
 
     return card_counter, False
-
 
 def get_card_data(url):
     print("GET CARD:", url)
@@ -213,7 +224,7 @@ if __name__ == "__main__":
             db = pickle.load(file)
     except FileNotFoundError:
         try:
-            with open("partial_dbs/csk66.partial.pkl","rb") as file:
+            with open("csk66.partial.pkl","rb") as file:
                 db = pickle.load(file)
         except:
             db = {"cards":{},"catalogs":{}}
