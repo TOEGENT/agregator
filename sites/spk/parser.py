@@ -10,7 +10,7 @@ base_url = "https://spk.ru"
 headers = {"User-Agent": "Mozilla/5.0"}
 timeout = 30
 
-PARTIAL_FILE = "spk.partial.pkl"
+PARTIAL_FILE = "dbs/spk.partial.pkl"
 
 
 def save_partial_on_error(exc_type, exc_value, traceback):
@@ -106,7 +106,14 @@ def get_catalog_cards(catalog_urls, catalogs, catalog_id, page, cards, reverse, 
         for card_url in page_cards:
             card_id = get_card_id(card_url)
             if card_id in cards:
-                print("DUPLICATE CARD, SKIP:", card_id)
+                print("CARD FROM DB:", card_id)
+                if card_id not in catalogs[catalog_id]["children"]:
+                    catalogs[catalog_id]["children"].append(card_id)
+                    print(catalogs[catalog_id]["children"])
+                reverse.setdefault(card_id, catalog_id)
+                card_counter += 1
+                if card_counter == 999999:
+                    return card_counter, True
                 continue
             card = get_card_data(card_url)
             if card is None:
@@ -212,7 +219,7 @@ def main(cards_dict:dict, old_catalogs:dict):
         remove_empty_catalogs(catalogs, reverse)
         return catalogs,reverse,cards
     except:
-        save_db(Path("spk.partial.pkl"), catalogs, cards, reverse)
+        save_db(Path(PARTIAL_FILE), catalogs, cards, reverse)
         raise
 
 
@@ -221,7 +228,7 @@ try:
         db = pickle.load(file)
 except FileNotFoundError:
     try:
-        with open("spk.partial.pkl","rb") as file:
+        with open(PARTIAL_FILE,"rb") as file:
             db = pickle.load(file)
     except FileNotFoundError:
         db = {"cards":{},"catalogs":{}}
