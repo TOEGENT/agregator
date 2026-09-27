@@ -5,7 +5,7 @@ from flask import Flask, abort, jsonify, render_template, request, url_for
 
 
 app = Flask(__name__)
-with open("combined.pkl", "rb") as file:
+with open("dbs/combined.pkl", "rb") as file:
     db = pickle.load(file)
 
 def build_catalog_images():
@@ -140,4 +140,4 @@ def product(card_id):
 
 
 if __name__ == "__main__":
-    app.run()
+    app.run(debug=False)
