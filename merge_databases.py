@@ -12,7 +12,7 @@ SOURCES = {
     "zavkrov": ("Кровля", "zavkrov.pkl"),
     "metallotorg": ("Чёрный металл", "metallotorg.pkl"),
     "makita": ("Инструменты","makita.pkl"),
-    "spk": ("Металл","spk.partial.pkl")
+    "spk": ("Металл","spk.pkl")
 }
 
 
@@ -62,7 +62,7 @@ def main():
             "CARDS:", len(source_db["cards"]),
         )
 
-    output = ROOT/"combined.pkl"
+    output = ROOT/"dbs/combined.pkl"
     with output.open("wb") as file:
         pickle.dump(merged, file)
 
