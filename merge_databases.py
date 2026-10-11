@@ -12,7 +12,9 @@ SOURCES = {
     "zavkrov": ("Кровля", "zavkrov.pkl"),
     "metallotorg": ("Чёрный металл", "metallotorg.pkl"),
     "makita": ("Инструменты","makita.pkl"),
-    "spk": ("Металл","spk.pkl")
+    "spk": ("Металл","spk.pkl"),
+    "esmetiz":("Саморезы","esmetiz.pkl")
+
 }
 
 
