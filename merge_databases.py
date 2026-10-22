@@ -5,6 +5,7 @@ from pathlib import Path
 ROOT = Path(__file__).parent
 DB_DIR = ROOT / "dbs"
 SOURCES = {
+    "centermk":("Профнастил","centermk.pkl"),
     "fundamentbolt": ("Фундаментные болты", "fundamentbolt.pkl"),
     "csk66": ("Метизы, абразивы, такелаж", "csk66.pkl"),
     "td-svarka": ("Сварка", "td-svarka.pkl"),
@@ -13,8 +14,8 @@ SOURCES = {
     "metallotorg": ("Чёрный металл", "metallotorg.pkl"),
     "makita": ("Инструменты","makita.pkl"),
     "spk": ("Металл","spk.pkl"),
-    "esmetiz":("Саморезы","esmetiz.pkl")
-
+    "esmetiz":("Саморезы","esmetiz.pkl"),
+    "elbows": ("Детали трубопроводов", "elbows.pkl"),
 }
 
 
@@ -35,11 +36,15 @@ def main():
             source_db = pickle.load(file)
 
         source_root = source_db["catalogs"]["root"]
+        source_children = list(source_root["children"])
+        if source == "centermk":
+            source_children.remove("profnastil")
+            source_children.insert(0, "profnastil")
         merged["catalogs"]["root"]["children"].append(source)
         merged["catalogs"][source] = {
             "title": title,
             "dealer": source_root["dealer"],
-            "children": [prefixed(source, item_id) for item_id in source_root["children"]],
+            "children": [prefixed(source, item_id) for item_id in source_children],
         }
         merged["reverse"][source] = "root"
 
