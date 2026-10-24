@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Строительные работы — СнабГарант-НТ{% endblock %}
+{% block content %}
+<nav class="back"><a href="{{ url_for('index') }}">← На главную</a></nav>
+<section class="services-hero" aria-labelledby="services-title">
+  <span class="eyebrow">Направления работ</span>
+  <h1 id="services-title">Строительные работы</h1>
+  <p>Ознакомительный перечень внутренних, отделочных, инженерных и кровельных работ. Состав работ и возможность выполнения уточняются при обсуждении задачи.</p>
+</section>
+<nav class="services-nav" aria-label="Разделы услуг">
+  {% for group in groups %}<a href="#{{ group.id }}">{{ group.title }}</a>{% endfor %}
+</nav>
+{% for group in groups %}
+<section class="services-section" id="{{ group.id }}" aria-labelledby="{{ group.id }}-title">
+  <span class="services-section-number">0{{ loop.index }}</span>
+  <h2 id="{{ group.id }}-title">{{ group.title }}</h2>
+  <div class="services-grid">
+    {% for name, description in group.services %}
+    <article class="service-card">{% if service_images.get(name) %}<img class="service-card-image" src="{{ url_for('static', filename=service_images[name]) }}" alt="{{ name }} — пример выполнения работ" loading="lazy">{% endif %}<h3>{{ name }}</h3><p>{{ description }}</p></article>
+    {% endfor %}
+  </div>
+</section>
+{% endfor %}
+<aside class="services-contact"><div><span class="eyebrow">Обсудить задачу</span><h2>Нужен состав работ под ваш объект?</h2><p>Расскажите, что планируете сделать, и уточните доступные виды работ.</p></div><a class="button" href="mailto:snabgarant-nt@yandex.ru?subject=Вопрос%20о%20строительных%20работах">Написать нам</a></aside>
+{% endblock %}
