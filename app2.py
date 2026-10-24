@@ -3,6 +3,8 @@ import re
 
 from flask import Flask, abort, jsonify, render_template, request, url_for
 
+from services import SERVICE_GROUPS, SERVICE_IMAGES
+
 
 app = Flask(__name__)
 with open("dbs/combined.pkl", "rb") as file:
@@ -127,6 +129,11 @@ def search():
     return render_template("search2.html", query=query, matches=matches)
 
 
+@app.route("/services")
+def services():
+    return render_template("services.html", groups=SERVICE_GROUPS, service_images=SERVICE_IMAGES)
+
+
 @app.route("/product/<card_id>")
 def product(card_id):
     card = db["cards"].get(card_id)
@@ -140,4 +147,4 @@ def product(card_id):
 
 
 if __name__ == "__main__":
-    app.run(debug=False)
+    app.run(debug=False,port=5001)
