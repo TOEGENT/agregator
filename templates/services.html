@@ -16,7 +16,7 @@
   <h2 id="{{ group.id }}-title">{{ group.title }}</h2>
   <div class="services-grid">
     {% for name, description in group.services %}
-    <article class="service-card">{% if service_images.get(name) %}<img class="service-card-image" src="{{ url_for('static', filename=service_images[name]) }}" alt="{{ name }} — пример выполнения работ" loading="lazy">{% endif %}<h3>{{ name }}</h3><p>{{ description }}</p></article>
+    <article class="service-card">{% if service_images.get(name) %}<img class="service-card-image" src="{{ url_for('static', filename=service_images[name]) }}" alt="{{ name }} — пример выполнения работ" width="960" height="640" loading="lazy" decoding="async">{% endif %}<h3>{{ name }}</h3><p>{{ description }}</p></article>
     {% endfor %}
   </div>
 </section>
