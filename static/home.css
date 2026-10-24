@@ -40,6 +40,10 @@
 .home-card-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:66px;padding:12px 18px 16px}
 .home-card-footer strong{font-size:17px;line-height:1.25}
 .home-card-footer span{color:#c72f35;font-size:22px}
+.home-services{display:flex;justify-content:space-between;align-items:center;gap:28px;margin-top:40px;padding:34px 40px;background:#252c31;border-radius:16px;color:#fff}
+.home-services h2{margin:8px 0;font-size:clamp(26px,3vw,36px)}
+.home-services p{max-width:680px;margin:0;color:#c9d0d4}
+.home-services .home-primary-button{flex:none}
 .home-benefits{margin-top:62px;padding:42px 46px 44px;background:#fff;border:1px solid #e5e8eb;border-radius:16px;scroll-margin-top:28px}
 .home-benefits-heading{max-width:700px}
 .home-benefits-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px;margin:32px 0 28px}
@@ -65,3 +69,4 @@
 @media(max-width:1050px){.home-nav{gap:16px}.home-phone{display:none}.home-catalog-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.home-hero-content{padding:38px}.home-hero h1{font-size:44px}}
 @media(max-width:760px){.home-page .header-inner{flex-wrap:wrap;min-height:70px;padding:12px 0;gap:12px}.home-nav{order:3;width:100%;margin:0;justify-content:space-between}.home-page .home-header-cta{margin-left:auto}.home-page main{padding-top:16px}.home-hero{grid-template-columns:1fr}.home-hero-content{padding:36px 28px}.home-hero-media{height:250px}.home-hero-media img{min-height:0}.home-search{margin:16px 0 40px}.home-catalog-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.home-benefits-grid{grid-template-columns:1fr;gap:16px}.home-benefits{padding:30px}.home-section-note{display:none}}
 @media(max-width:480px){.home-page .header-inner,.home-page main{width:calc(100% - 28px)}.home-page .home-brand{font-size:18px}.home-brand small{font-size:9px}.home-page .home-header-cta{min-height:40px;padding:8px 11px;font-size:12px}.home-nav a{font-size:12px}.home-hero h1{font-size:38px}.home-hero p{font-size:16px}.home-hero-content{padding:30px 22px}.home-hero-media{height:205px}.home-hero-actions{width:100%}.home-page .home-hero-actions>*{width:100%}.home-search{padding:19px}.home-search-row{flex-direction:column}.home-page .home-search-row button{width:100%}.home-catalog-grid{gap:10px}.home-card-media{height:122px;margin:6px}.home-card-media img{padding:8px}.home-card-footer{padding:10px;min-height:62px}.home-card-footer strong{font-size:14px}.home-benefits{margin-top:44px;padding:26px 21px}}
+@media(max-width:680px){.home-services{display:block;padding:28px 22px}.home-services .home-primary-button{margin-top:22px}}
