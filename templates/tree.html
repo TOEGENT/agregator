@@ -4,7 +4,7 @@
 {% if is_root %}
 <section class="home-hero" aria-labelledby="home-title">
   <div class="home-hero-content"><span class="home-kicker">СнабГарант-НТ · Профимакс</span><h1 id="home-title">Комплексные поставки для строительства</h1><p>Инструмент, металл, крепёж и материалы для вашего объекта — в одном каталоге.</p><div class="home-hero-actions"><a class="home-primary-button" href="#catalog">Смотреть каталог <span aria-hidden="true">→</span></a><button class="home-secondary-button" type="button" data-open-request>Отправить заявку</button></div><div class="home-hero-note">Поможем подобрать продукцию под задачи объекта</div></div>
-  <div class="home-hero-media"><img src="{{ url_for('static', filename='images/hero-warehouse.png') }}" alt="Стеллажи с металлопрокатом и строительными материалами на складе" fetchpriority="high"></div>
+  <div class="home-hero-media"><img src="{{ url_for('static', filename='images/hero-team.webp') }}" alt="Специалисты в фирменной одежде на строительной площадке" width="1440" height="810" fetchpriority="high"></div>
 </section>
 <section class="home-search" aria-label="Поиск по каталогу"><form action="{{ url_for('search') }}" method="get"><label for="home-query">Поиск по каталогу</label><div class="home-search-row"><input id="home-query" name="q" type="search" placeholder="Название товара или характеристика" required><button type="submit">Найти</button></div></form></section>
 <div class="home-section-heading" id="catalog"><div><span class="home-kicker">Каталог продукции</span><h2>Основные направления</h2></div><span class="home-section-note">Выберите раздел, чтобы посмотреть товары</span></div>
